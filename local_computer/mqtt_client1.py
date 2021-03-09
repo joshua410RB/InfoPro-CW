@@ -45,7 +45,7 @@ def begin_mqtt_client():
     bomb_client.loop_start()
     while True:
         sensor_data = test_data.get()
-        (rc, mid) = accel_client.publish("info/accel", "Device1:"+str(sensor_data), qos=1)
+        (rc, mid) = accel_client.publish("info/accel", "Device2:"+str(sensor_data), qos=1)
         time.sleep(0.5)
         logging.debug(sensor_data)
 
