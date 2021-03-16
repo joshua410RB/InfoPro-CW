@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+hardware/fpga_signal_path/db/fpga_signal_path.db_info
+hardware/fpga_signal_path/db/fpga_signal_path.quiproj.229447.rdr.flock
+hardware/fpga_signal_path/fpga_signal_path.qsf.bak
