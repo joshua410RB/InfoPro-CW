@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 HOST = '127.0.0.1'
 PORT = 8000        # The port used by the server
 
-test_data = queue.Queue()
+speed_data = queue.Queue()
 movement_data = [0]
 
 black = (0,0,0)
@@ -132,7 +132,7 @@ def generate_random():
     logging.debug("Starting Generation")
     index = 0
     while True:
-        test_data.append(randint(0,10))
+        speed_data.append(randint(0,10))
         time.sleep(0.1)
         # if (index == 1000):
         #     break
@@ -163,12 +163,12 @@ def receive_val(cmd):
             if (len(tmp[-1]) == 8):
                 out = twos_comp(int(tmp[-1],16), 32)
                 absolute_out = -1 * int(out)
-                test_data.put(absolute_out)
+                speed_data.put(absolute_out)
                 move = absolute_out / 300 * 800
                 # print(move)
                 movement_data.append(move)
                 # print(tmp[-1])
-                # print(test_data)
+                # print(speed_data)
         except:
             pass  
         # if (index == 999):
@@ -184,13 +184,13 @@ def start_client():
         index = 0
         while True:
             try:
-                item = test_data.get()
+                item = speed_data.get()
                 # logging.debug(item)
                 sent = s.send(item.to_bytes(4,"big"))
             except IndexError:
                 logging.debug("Waiting")
                 time.sleep(0.01)
-                # sent = s.send(test_data[index].to_bytes(4,"big"))
+                # sent = s.send(speed_data[index].to_bytes(4,"big"))
                 
             # data = s.recv(1024)
             # print('Received', int.from_bytes(data, "big"))

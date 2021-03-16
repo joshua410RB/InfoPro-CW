@@ -7,7 +7,7 @@ from random import randint
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
-test_data = queue.Queue()
+speed_data = queue.Queue()
 
 def on_publish(client, userdata, mid):
     # print("mid: "+str(mid))
@@ -44,7 +44,7 @@ def begin_mqtt_client():
     accel_client.loop_start()
     bomb_client.loop_start()
     while True:
-        sensor_data = test_data.get()
+        sensor_data = speed_data.get()
         (rc, mid) = accel_client.publish("info/accel", "Device2:"+str(sensor_data), qos=1)
         time.sleep(0.5)
         logging.debug(sensor_data)
@@ -53,7 +53,7 @@ def generate_random():
     logging.debug("Starting Generation")
     index = 0
     while True:
-        test_data.put(randint(0,10))
+        speed_data.put(randint(0,10))
         time.sleep(0.5)
         # if (index == 1000):
         #     break
