@@ -1,5 +1,9 @@
 import socket
-import threading, queue
+import threading
+try: 
+    import queue
+except ImportError:
+    import Queue as queue
 from random import randint
 import time
 import logging
