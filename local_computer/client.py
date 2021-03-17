@@ -61,12 +61,12 @@ def crash(gameDisplay,clock, carImg):
     message_display(gameDisplay, 'You Crashed', clock, carImg)
     
 def game_loop(gameDisplay, clock, carImg):
+    bomb_xy = []
+
     x = (display_width * 0.45)
     y = (display_height * 0.8)
 
     x_change = 0
-
-    bomb_xy = []
 
     thing_startx = random.randrange(0, display_width)
     thing_starty = -600
@@ -78,7 +78,7 @@ def game_loop(gameDisplay, clock, carImg):
 
     while not gameExit:
 
-        #for event in pygame.event.get():
+        for event in pygame.event.get():
         #     if event.type == pygame.QUIT:
         #         pygame.quit()
         #         quit()
