@@ -1,6 +1,7 @@
 import paho.mqtt.client as paho
 import time 
 import logging
+from database import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -18,25 +19,59 @@ def on_publish(client, userdata, mid):
 def on_connect_accel(client, obj, flags, rc):
     if rc == 0:
         print("Accel connected")
-        client.subscribe("info/accel", qos = 1)
+        client.subscribe("info/speed", qos = 1)
     else:
         print("Bad connection")
 
-accel_server = paho.Client("AccelHandler")
-bomb_server = paho.Client("BombHandler")
-accel_server.on_subscribe = on_subscribe
-accel_server.on_message = on_message
-accel_server.on_connect = on_connect_accel
-bomb_server.on_publish = on_publish
+def on_connect_game(client, obj, flags, rc):
+    if rc == 0:
+        print("Game Control connected")
+        client.subscribe("info/game", qos = 1)
+    else:
+        print("Bad connection")
 
-accel_server.connect("localhost", 1883)
-bomb_server.connect("localhost", 1883)
+def on_message_game(client, userdata, msg):
+    print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))  
+
+class mqtt_server_handler:
+    def __init__(self, ip, port):
+        self.brokerip = ip
+        self.brokerport = port
+        self.accel_server = paho.Client("AccelHandler")
+        self.bomb_server = paho.Client("BombHandler")
+        self.game_server = paho.Client("GameHandler")
+        self.accel_server.on_subscribe = on_subscribe
+        self.accel_server.on_message = on_message
+        self.accel_server.on_connect = on_connect_accel
+        self.bomb_server.on_publish = on_publish
+        self.username = "siyu"
+        self.password = "password"
 
 
-bomb_server.loop_start()
-accel_server.loop_start()
+    def connect(self):
+        try:
+            self.accel_server.username_pw_set(self.username, self.password)
+            self.bomb_server.username_pw_set(self.username, self.password)
+            self.accel_server.connect(self.brokerip, self.brokerport)
+            self.bomb_server.connect(self.brokerip, self.brokerport)        
 
-bomb_event = 1
-while True:
-    (rc, mid) = bomb_server.publish("info/bomb", str(bomb_event), qos=1)
-    time.sleep(5)
+        except:
+            logging.debug("Connection Failed")
+            exit(1)
+
+    def start_server_handler(self):
+        logging.debug("Server Started")
+        self.bomb_server.loop_start()
+        self.accel_server.loop_start()
+        bomb_event = 1
+        while True:
+            (rc, mid) = self.bomb_server.publish("info/bomb", str(bomb_event), qos=1)
+            time.sleep(5)
+
+def main():
+    mqtt = mqtt_server_handler("localhost", 1883)
+    mqtt.connect()
+    mqtt.start_server_handler()
+
+if __name__ == "__main__":
+    main()

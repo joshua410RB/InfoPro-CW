@@ -138,4 +138,6 @@ hardware/fpga_signal_path/simulation/
 hardware/fpga_signal_path/programs/RemoteSystemsTempFiles/
 hardware/fpga_signal_path/programs/.metadata
 hardware/fpga_signal_path/software/
+hardware/fpga_signal_path/nios2_cpu/
+hardware/fpga_signal_path/synthesis/
 hardware/fpga_com_link/

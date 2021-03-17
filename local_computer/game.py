@@ -1,12 +1,15 @@
 import pygame
 import time
 import random
+import sys
 
 black = (0,0,0)
 white = (255,255,255)
 red = (255,0,0)
 
 car_width = 73
+car_height = 73
+
 pygame.init()
 
 display_width = 800
@@ -18,6 +21,7 @@ pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
 
 carImg = pygame.image.load('racecar.png')
+bombImg = pygame.image.load('bomb.png')
 
 def things(thingx, thingy, thingw, thingh, color):
     pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
@@ -47,6 +51,7 @@ def crash():
     message_display('You Crashed')
     
 def game_loop(gameDisplay, display_height, display_width):
+    bomb_xy = []
     x = (display_width * 0.45)
     y = (display_height * 0.8)
 
@@ -72,6 +77,12 @@ def game_loop(gameDisplay, display_height, display_width):
                     x_change = -5
                 if event.key == pygame.K_RIGHT:
                     x_change = 5
+		#bomb
+		if event.key == pygame.K_SPACE:
+		    if len(bomb_xy) <2:
+			bomb_x = x + car_width/2
+			bomb_y = y - car_height/4
+			bomb_xy.append([bomb_x,bomb_y])
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -100,7 +111,22 @@ def game_loop(gameDisplay, display_height, display_width):
                 print('x crossover')
                 crash()
         ####
-        
+
+	#bomb
+	if len(bomb_xy) != 0:
+	    for i, a_xy in enumerate(bomb_xy):
+		a_xy[1] -= 10
+		bomb_xy[i][1] = a_xy[1]
+
+		if a_xy[1] <= 0:
+		    try:
+			bomb_xy.remove(a_xy)
+		    except:
+			pass
+	if len(bomb_xy) != 0:
+	    for a_x, a_y in bomb_xy:
+		drawObject(bomb, a_x, a_y)
+
         pygame.display.update()
         clock.tick(60)
 

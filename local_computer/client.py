@@ -1,5 +1,9 @@
 import socket
-import threading, queue
+import threading
+try: 
+    import queue
+except ImportError:
+    import Queue as queue
 from random import randint
 import time
 import logging
@@ -23,6 +27,7 @@ white = (255,255,255)
 red = (255,0,0)
 
 car_width = 73
+car_height = 73
 
 display_width = 800
 display_height = 600
@@ -32,6 +37,9 @@ def things(gameDisplay, thingx, thingy, thingw, thingh, color):
 
 def car(gameDisplay, carImg, x,y):
     gameDisplay.blit(carImg,(x,y))
+
+def bomb(gameDisplay, bombImg, x,y):
+    gameDisplay.blit(bombImg,(x,y))
 
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
@@ -53,6 +61,8 @@ def crash(gameDisplay,clock, carImg):
     message_display(gameDisplay, 'You Crashed', clock, carImg)
     
 def game_loop(gameDisplay, clock, carImg):
+    bomb_xy = []
+
     x = (display_width * 0.45)
     y = (display_height * 0.8)
 
@@ -68,17 +78,21 @@ def game_loop(gameDisplay, clock, carImg):
 
     while not gameExit:
 
-        # for event in pygame.event.get():
+        for event in pygame.event.get():
         #     if event.type == pygame.QUIT:
         #         pygame.quit()
         #         quit()
 
-        #     if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
         #         if event.key == pygame.K_LEFT:
         #             x_change = -5
         #         if event.key == pygame.K_RIGHT:
         #             x_change = 5
-
+	    if event.key == pygame.K_SPACE:
+	        if len(bomb_xy) <2:
+		    bomb_x = x + car_width/2
+		    bomb_y = y - car_height/4
+		    bomb_xy.append([bomb_x,bomb_y])
         #     if event.type == pygame.KEYUP:
         #         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
         #             x_change = 0
@@ -108,11 +122,27 @@ def game_loop(gameDisplay, clock, carImg):
                 print('x crossover')
                 crash(gameDisplay, clock, carImg)
         ####
-        
+	#bomb
+	if len(bomb_xy) != 0:
+	    for i, a_xy in enumerate(bomb_xy):
+		a_xy[1] -= 10
+		bomb_xy[i][1] = a_xy[1]
+		if a_xy[1] <= 0:
+		    try:
+			bomb_xy.remove(a_xy)
+		    except:
+			pass
+
+	if len(bomb_xy) != 0:
+	    for a_x, a_y in bomb_xy:
+		drawObject(bomb, a_x, a_y)
+
+
         pygame.display.update()
         clock.tick(60)
 
 def game_start():
+
     pygame.init()
 
     gameDisplay = pygame.display.set_mode((display_width,display_height))
@@ -120,7 +150,7 @@ def game_start():
     clock = pygame.time.Clock()
 
     carImg = pygame.image.load('racecar.png')
-
+    bombImg = pygame.image.load('bomb.png')
 
     game_loop(gameDisplay, clock, carImg)
     pygame.quit()
