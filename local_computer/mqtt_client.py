@@ -78,7 +78,8 @@ def generate_random():
 
 def receive_val(cmd):
     logging.debug("Starting FPGA UART")
-    inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
+    # inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
+    inputCmd = "./test"
  
     process = subprocess.Popen(inputCmd, shell=True,
                                 executable='/bin/bash' , 
@@ -87,9 +88,7 @@ def receive_val(cmd):
     index = 0
     while True:
         output = process.stdout.readline()
-        # if process.poll() is not None and output == b'':
-        #     break
-        time.sleep(0.5)
+        # time.sleep(0.5)
         output = output.decode("utf-8")
         tmp = output.split()
         logging.debug(tmp)
@@ -102,20 +101,13 @@ def receive_val(cmd):
             # print(move)
             # movement_data.append(move)
             # print(tmp[-1])
-            # print(speed_data)
         except:
             pass  
-        if (index == 50):
-            # stdout_val = process.communicate(input="o".encode())[0]
-            
-            # logging.debug(stdout_val.decode('utf-8'))
-            break
-        elif (index == 10):
-            stdout_val = process.communicate(input="f".encode())[0]
-            print(stdout_val)
-            # process.stdin.write(b'f\n')
-            # process.stdin.flush()
-            # print(process.stdout.readline())
+
+        if (index == 10):
+            process.stdin.write(b'f')
+            process.stdin.flush()
+            print(process.stdout.readline())
             logging.debug("Sending mode")
         index += 1
     
@@ -128,14 +120,13 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 def main():
-    receive_val("o")
-    # mqtt = mqtt_client("localhost", 1883)
-    # mqtt.connect()
-    # # x = threading.Thread(target=generate_random)
+    mqtt = mqtt_client("localhost", 1883)
+    mqtt.connect()
+    x = threading.Thread(target=generate_random)
     # x = threading.Thread(target=receive_val, args={'o'})
-    # # y = threading.Thread(target=mqtt.start_client)
-    # x.start()
-    # y.start()
+    y = threading.Thread(target=mqtt.start_client)
+    x.start()
+    y.start()
 
 if __name__ == "__main__":
     main()
