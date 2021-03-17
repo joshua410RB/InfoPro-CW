@@ -1,6 +1,7 @@
 import paho.mqtt.client as paho
 import time 
 import logging
+from database import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -22,6 +23,15 @@ def on_connect_accel(client, obj, flags, rc):
     else:
         print("Bad connection")
 
+def on_connect_game(client, obj, flags, rc):
+    if rc == 0:
+        print("Game Control connected")
+        client.subscribe("info/game", qos = 1)
+    else:
+        print("Bad connection")
+
+def on_message_game(client, userdata, msg):
+    print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))  
 
 class mqtt_server_handler:
     def __init__(self, ip, port):
@@ -34,9 +44,14 @@ class mqtt_server_handler:
         self.accel_server.on_message = on_message
         self.accel_server.on_connect = on_connect_accel
         self.bomb_server.on_publish = on_publish
+        self.username = "siyu"
+        self.password = "password"
+
 
     def connect(self):
         try:
+            self.accel_server.username_pw_set(self.username, self.password)
+            self.bomb_server.username_pw_set(self.username, self.password)
             self.accel_server.connect(self.brokerip, self.brokerport)
             self.bomb_server.connect(self.brokerip, self.brokerport)        
 

@@ -44,9 +44,17 @@ class mqtt_client:
         self.bomb_client.on_connect = on_connect_bomb
         self.accel_client.on_publish = on_publish
         self.bomb_client.on_message = on_message
+        # self.username = "siyu"
+        # self.password = "password"
 
     def connect(self):
-        try:
+        try:            
+            # self.accel_client.username_pw_set(self.username, self.password)
+            # self.bomb_client.username_pw_set(self.username, self.password)
+            self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            self.accel_client.tls_insecure_set(True)
+            self.bomb_client.tls_insecure_set(True)
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
 
@@ -128,7 +136,7 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 def main():
-    mqtt = mqtt_client("localhost", 1883)
+    mqtt = mqtt_client("13.212.218.108", 8883)
     mqtt.connect()
     x = threading.Thread(target=generate_random)
     # x = threading.Thread(target=receive_val, args={'o'})

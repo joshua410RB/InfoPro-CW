@@ -20,38 +20,40 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
-def create_distance_record(conn, article, source):
-    article.append(datetime.utcnow().strftime("%d-%m-%y"))
-    article.append(source)
-    sql_query = """INSERT INTO news(headline,link,og_compound_rating,og_negative_rating, og_neutral_rating, og_positive_rating, date, source)
-                   VALUES(?,?,?,?,?,?,?,?)"""
-    cur = conn.cursor()
-    cur.execute(sql_query, article)
-    conn.commit()
-    return cur.lastrowid
-
-def select_news_by_source_date(conn, source, date):
-    sql_query = """SELECT * FROM news WHERE source=? and date=?"""
-    cur = conn.cursor()
-    cur.execute(sql_query, (source, date, ))
-    return cur.fetchall()
-
-
-def select_vote_by_news_id(conn, news_id):
-    sql_query = """SELECT * FROM votes WHERE news_id=?"""
-    cur = conn.cursor()
-    cur.execute(sql_query, (news_id,))
-    return cur.fetchall()
-
-
-def vote_news(conn, news_id, vote):
-    last_updated = datetime.utcnow().strftime("%d/%m/%y")
-    sql_query = """INSERT into votes(vote,news_id,last_updated) 
+# Insert Data to Distance Table
+def create_distance_record(conn, user_record):
+    user_record.append(datetime.utcnow().strftime("%d-%m-%y"))
+    sql_query = """INSERT INTO distance_record (username, distance, game_id)
                    VALUES(?,?,?)"""
     cur = conn.cursor()
-    cur.execute(sql_query, (vote,news_id, last_updated))
+    cur.execute(sql_query, user_record)
     conn.commit()
     return cur.lastrowid
+
+# Insert Data to LeaderBoard Table
+def create_game_record(conn, game_record):
+    sql_query = """INSERT into position_history(first, second, third, fourth, fifth, sixth, date) 
+                   VALUES(?,?,?,?,?,?,?)"""
+    cur = conn.cursor()
+    cur.execute(sql_query, game_record) 
+    conn.commit()
+    return cur.lastrowid
+
+# Get Highscores
+def select_highscore(conn):
+    sql_query = """SELECT username, distance FROM distance_record ORDER BY distance LIMIT 5"""
+    cur = conn.cursor()
+    cur.execute(sql_query)
+    return cur.fetchall()
+
+# Get Today's Game Records
+def select_game_records(conn, source, date):
+    sql_query = """SELECT * FROM position_history WHERE date=?"""
+    cur = conn.cursor()
+    cur.execute(sql_query, date)
+    return cur.fetchall()
+
+
 
 if __name__ == "__main__":
     database = "db/racegame.db"
@@ -66,12 +68,11 @@ if __name__ == "__main__":
                                             date text NOT NULL
                                          ); """
 
-    sql_create_distance_record_table = """CREATE TABLE IF NOT EXISTS votes (
+    sql_create_distance_record_table = """CREATE TABLE IF NOT EXISTS distance_record (
                                           id integer PRIMARY KEY,
                                           username text NOT NULL,
                                           distance integer NOT NULL,
                                           game_id integer NOT NULL,
-                                          last_updated text NOT NULL,
                                           FOREIGN KEY (game_id) REFERENCES position_history (id)
                                       );"""
     
