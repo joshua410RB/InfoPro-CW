@@ -78,10 +78,10 @@ def game_loop(gameDisplay, clock, carImg):
 
     while not gameExit:
 
-        for event in pygame.event.get():
-             if event.type == pygame.QUIT:
-                 pygame.quit()
-                 quit()
+        #for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         pygame.quit()
+        #         quit()
 
         if event.type == pygame.KEYDOWN:
         #         if event.key == pygame.K_LEFT:
