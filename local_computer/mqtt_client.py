@@ -128,14 +128,13 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 def main():
-    receive_val("o")
-    # mqtt = mqtt_client("localhost", 1883)
-    # mqtt.connect()
-    # # x = threading.Thread(target=generate_random)
+    mqtt = mqtt_client("localhost", 1883)
+    mqtt.connect()
+    x = threading.Thread(target=generate_random)
     # x = threading.Thread(target=receive_val, args={'o'})
-    # # y = threading.Thread(target=mqtt.start_client)
-    # x.start()
-    # y.start()
+    y = threading.Thread(target=mqtt.start_client)
+    x.start()
+    y.start()
 
 if __name__ == "__main__":
     main()

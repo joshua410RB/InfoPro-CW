@@ -7,7 +7,7 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-        print(sqlite3.version)
+        print("DB created")
     except Error as e:
         print(e)
 
@@ -20,7 +20,7 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
-def create_news(conn, article, source):
+def create_distance_record(conn, article, source):
     article.append(datetime.utcnow().strftime("%d-%m-%y"))
     article.append(source)
     sql_query = """INSERT INTO news(headline,link,og_compound_rating,og_negative_rating, og_neutral_rating, og_positive_rating, date, source)
@@ -29,12 +29,6 @@ def create_news(conn, article, source):
     cur.execute(sql_query, article)
     conn.commit()
     return cur.lastrowid
-
-def select_news_by_source(conn, source):
-    sql_query = """SELECT * FROM news WHERE source=?"""
-    cur = conn.cursor()
-    cur.execute(sql_query, (source,))
-    return cur.fetchall()
 
 def select_news_by_source_date(conn, source, date):
     sql_query = """SELECT * FROM news WHERE source=? and date=?"""
@@ -60,35 +54,33 @@ def vote_news(conn, news_id, vote):
     return cur.lastrowid
 
 if __name__ == "__main__":
-    database = "db/news.db"
-    sql_create_news_table = """ CREATE TABLE IF NOT EXISTS news (
-                                        id integer PRIMARY KEY,
-                                        headline text NOT NULL,
-                                        link text NOT NULL,
-                                        source text NOT NULL,
-                                        og_compound_rating real NOT NULL,
-                                        og_negative_rating real NOT NULL,
-                                        og_neutral_rating real NOT NULL,
-                                        og_positive_rating real NOT NULL,
-                                        date text NOT NULL
-                                    ); """
+    database = "db/racegame.db"
+    sql_create_position_history_table = """ CREATE TABLE IF NOT EXISTS position_history (
+                                            id integer PRIMARY KEY,
+                                            first text NOT NULL,
+                                            second text,
+                                            third text,
+                                            fourth text,
+                                            fifth text,
+                                            sixth text,
+                                            date text NOT NULL
+                                         ); """
 
-    sql_create_votes_table = """CREATE TABLE IF NOT EXISTS votes (
-                                    id integer PRIMARY KEY,
-                                    vote text NOT NULL,
-                                    news_id integer NOT NULL,
-                                    last_updated text NOT NULL,
-                                    FOREIGN KEY (news_id) REFERENCES news (id)
-                                );"""
+    sql_create_distance_record_table = """CREATE TABLE IF NOT EXISTS votes (
+                                          id integer PRIMARY KEY,
+                                          username text NOT NULL,
+                                          distance integer NOT NULL,
+                                          game_id integer NOT NULL,
+                                          last_updated text NOT NULL,
+                                          FOREIGN KEY (game_id) REFERENCES position_history (id)
+                                      );"""
     
     conn = create_connection(database)
 
     if conn is not None:
-        create_table(conn, sql_create_news_table)
+        create_table(conn, sql_create_position_history_table)
 
-        create_table(conn,sql_create_votes_table)
+        create_table(conn,sql_create_distance_record_table)
     else:
         print("Error! Cannot create connection")
         
-    print(select_news_by_source(conn, "mothership"))
-    vote_news(conn, 1, 'postive' )
