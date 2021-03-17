@@ -117,6 +117,7 @@ def game_loop(gameDisplay, clock, carImg):
         clock.tick(60)
 
 def game_start():
+
     pygame.init()
 
     gameDisplay = pygame.display.set_mode((display_width,display_height))
@@ -124,7 +125,7 @@ def game_start():
     clock = pygame.time.Clock()
 
     carImg = pygame.image.load('racecar.png')
-
+    bombImg = pygame.image.load('bomb.png')
 
     game_loop(gameDisplay, clock, carImg)
     pygame.quit()
