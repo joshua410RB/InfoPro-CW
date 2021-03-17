@@ -26,3 +26,9 @@ The module "signal_path_nios_top_mod.v" contains an instance of the signal path 
 3. x-axis data is diaplyed on HEX5-4 and y-axis data on HEX1-0. SW1-0 select the x-axis filter coefficient bank and SW3-2 select the y-axis filter coefficient bank
 
 Note: When displaying values on the 7seg displays, the NIOS2 stores the value to a PIO register. The decoding is handled in hardware by dedicated hex_to_7seg modules
+</br>
+
+## Coefficients
+The coefficients are quantized 16-bit decimal numbers. Quantization is done by shifting the fixed-point binary form of the decimal left by 16 bits. 
+
+For example (using 4-bits): 0.5 in fixed point binary is 0.1000, its quantized form is 1000 (shoft left by 4-bits)
