@@ -13,7 +13,7 @@ module nios2_cpu (
 		output wire [7:0]  disp1_export,           //           disp1.export
 		output wire [9:0]  led_export,             //             led.export
 		input  wire        reset_reset_n,          //           reset.reset_n
-		input  wire [9:0]  switch_export,          //          switch.export
+		input  wire [10:0] switch_export,          //          switch.export
 		output wire [8:0]  update_control_export,  //  update_control.export
 		output wire [15:0] update_value_export,    //    update_value.export
 		output wire [1:0]  x_coeff_bank_export,    //    x_coeff_bank.export
@@ -108,10 +108,16 @@ module nios2_cpu (
 	wire   [1:0] mm_interconnect_0_z_coeff_bank_s1_address;                 // mm_interconnect_0:z_coeff_bank_s1_address -> z_coeff_bank:address
 	wire         mm_interconnect_0_z_coeff_bank_s1_write;                   // mm_interconnect_0:z_coeff_bank_s1_write -> z_coeff_bank:write_n
 	wire  [31:0] mm_interconnect_0_z_coeff_bank_s1_writedata;               // mm_interconnect_0:z_coeff_bank_s1_writedata -> z_coeff_bank:writedata
+	wire         mm_interconnect_0_sysclk_timer_s1_chipselect;              // mm_interconnect_0:sysclk_timer_s1_chipselect -> sysclk_timer:chipselect
+	wire  [15:0] mm_interconnect_0_sysclk_timer_s1_readdata;                // sysclk_timer:readdata -> mm_interconnect_0:sysclk_timer_s1_readdata
+	wire   [2:0] mm_interconnect_0_sysclk_timer_s1_address;                 // mm_interconnect_0:sysclk_timer_s1_address -> sysclk_timer:address
+	wire         mm_interconnect_0_sysclk_timer_s1_write;                   // mm_interconnect_0:sysclk_timer_s1_write -> sysclk_timer:write_n
+	wire  [15:0] mm_interconnect_0_sysclk_timer_s1_writedata;               // mm_interconnect_0:sysclk_timer_s1_writedata -> sysclk_timer:writedata
 	wire         irq_mapper_receiver0_irq;                                  // jtag_uart:av_irq -> irq_mapper:receiver0_irq
 	wire         irq_mapper_receiver1_irq;                                  // accel_data_interrupt:irq -> irq_mapper:receiver1_irq
+	wire         irq_mapper_receiver2_irq;                                  // sysclk_timer:irq -> irq_mapper:receiver2_irq
 	wire  [31:0] cpu_irq_irq;                                               // irq_mapper:sender_irq -> cpu:irq
-	wire         rst_controller_reset_out_reset;                            // rst_controller:reset_out -> [accel_data_interrupt:reset_n, accel_xread:reset_n, accel_yread:reset_n, accel_zread:reset_n, cpu:reset_n, irq_mapper:reset, jtag_uart:rst_n, led:reset_n, mm_interconnect_0:cpu_reset_reset_bridge_in_reset_reset, onchip_memory2_0:reset, print0:reset_n, print1:reset_n, rst_translator:in_reset, switch:reset_n, update_control:reset_n, update_value:reset_n, x_coeff_bank:reset_n, y_coeff_bank:reset_n, z_coeff_bank:reset_n]
+	wire         rst_controller_reset_out_reset;                            // rst_controller:reset_out -> [accel_data_interrupt:reset_n, accel_xread:reset_n, accel_yread:reset_n, accel_zread:reset_n, cpu:reset_n, irq_mapper:reset, jtag_uart:rst_n, led:reset_n, mm_interconnect_0:cpu_reset_reset_bridge_in_reset_reset, onchip_memory2_0:reset, print0:reset_n, print1:reset_n, rst_translator:in_reset, switch:reset_n, sysclk_timer:reset_n, update_control:reset_n, update_value:reset_n, x_coeff_bank:reset_n, y_coeff_bank:reset_n, z_coeff_bank:reset_n]
 	wire         rst_controller_reset_out_reset_req;                        // rst_controller:reset_req -> [cpu:reset_req, onchip_memory2_0:reset_req, rst_translator:reset_req_in]
 
 	nios2_cpu_accel_data_interrupt accel_data_interrupt (
@@ -247,6 +253,17 @@ module nios2_cpu (
 		.in_port  (switch_export)                         // external_connection.export
 	);
 
+	nios2_cpu_sysclk_timer sysclk_timer (
+		.clk        (clk_clk),                                      //   clk.clk
+		.reset_n    (~rst_controller_reset_out_reset),              // reset.reset_n
+		.address    (mm_interconnect_0_sysclk_timer_s1_address),    //    s1.address
+		.writedata  (mm_interconnect_0_sysclk_timer_s1_writedata),  //      .writedata
+		.readdata   (mm_interconnect_0_sysclk_timer_s1_readdata),   //      .readdata
+		.chipselect (mm_interconnect_0_sysclk_timer_s1_chipselect), //      .chipselect
+		.write_n    (~mm_interconnect_0_sysclk_timer_s1_write),     //      .write_n
+		.irq        (irq_mapper_receiver2_irq)                      //   irq.irq
+	);
+
 	nios2_cpu_update_control update_control (
 		.clk        (clk_clk),                                        //                 clk.clk
 		.reset_n    (~rst_controller_reset_out_reset),                //               reset.reset_n
@@ -367,6 +384,11 @@ module nios2_cpu (
 		.print1_s1_chipselect                    (mm_interconnect_0_print1_s1_chipselect),                    //                                .chipselect
 		.switch_s1_address                       (mm_interconnect_0_switch_s1_address),                       //                       switch_s1.address
 		.switch_s1_readdata                      (mm_interconnect_0_switch_s1_readdata),                      //                                .readdata
+		.sysclk_timer_s1_address                 (mm_interconnect_0_sysclk_timer_s1_address),                 //                 sysclk_timer_s1.address
+		.sysclk_timer_s1_write                   (mm_interconnect_0_sysclk_timer_s1_write),                   //                                .write
+		.sysclk_timer_s1_readdata                (mm_interconnect_0_sysclk_timer_s1_readdata),                //                                .readdata
+		.sysclk_timer_s1_writedata               (mm_interconnect_0_sysclk_timer_s1_writedata),               //                                .writedata
+		.sysclk_timer_s1_chipselect              (mm_interconnect_0_sysclk_timer_s1_chipselect),              //                                .chipselect
 		.update_control_s1_address               (mm_interconnect_0_update_control_s1_address),               //               update_control_s1.address
 		.update_control_s1_write                 (mm_interconnect_0_update_control_s1_write),                 //                                .write
 		.update_control_s1_readdata              (mm_interconnect_0_update_control_s1_readdata),              //                                .readdata
@@ -399,6 +421,7 @@ module nios2_cpu (
 		.reset         (rst_controller_reset_out_reset), // clk_reset.reset
 		.receiver0_irq (irq_mapper_receiver0_irq),       // receiver0.irq
 		.receiver1_irq (irq_mapper_receiver1_irq),       // receiver1.irq
+		.receiver2_irq (irq_mapper_receiver2_irq),       // receiver2.irq
 		.sender_irq    (cpu_irq_irq)                     //    sender.irq
 	);
 

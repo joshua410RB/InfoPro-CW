@@ -33,17 +33,17 @@ module nios2_cpu_switch (
   output  [ 31: 0] readdata;
   input   [  1: 0] address;
   input            clk;
-  input   [  9: 0] in_port;
+  input   [ 10: 0] in_port;
   input            reset_n;
 
 
 wire             clk_en;
-wire    [  9: 0] data_in;
-wire    [  9: 0] read_mux_out;
+wire    [ 10: 0] data_in;
+wire    [ 10: 0] read_mux_out;
 reg     [ 31: 0] readdata;
   assign clk_en = 1;
   //s1, which is an e_avalon_slave
-  assign read_mux_out = {10 {(address == 0)}} & data_in;
+  assign read_mux_out = {11 {(address == 0)}} & data_in;
   always @(posedge clk or negedge reset_n)
     begin
       if (reset_n == 0)

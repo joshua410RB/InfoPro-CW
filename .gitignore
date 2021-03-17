@@ -135,3 +135,7 @@ hardware/fpga_signal_path/incremental_db/
 hardware/fpga_signal_path/db/
 hardware/fpga_signal_path/output_files/
 hardware/fpga_signal_path/simulation/
+hardware/fpga_signal_path/programs/RemoteSystemsTempFiles/
+hardware/fpga_signal_path/programs/.metadata
+hardware/fpga_signal_path/software/
+hardware/fpga_com_link/

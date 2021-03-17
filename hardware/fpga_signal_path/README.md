@@ -1,7 +1,11 @@
+# Latest
+C code with support for FPGA-PC UART communication added (programs/signal_uart_small.c)
+</br>
+
 # FPGA Signal Path
 Hardware implementation of the signal path (Accelerometer read + FIR filter). Reads each of the 3 axes and applies and 16-tap FIR filter to the data. Each axis has its own dedicated FIR filter. 
 
-The signal path module handles updating the filter at the prescribed sample rate, freeing the NIOS2 to do other things. An interrupt is used to signal to the NIOS2 that new values are available (implementation example in "accel_test.c" under "programs" folder)
+The signal path module handles updating the filter at the prescribed sample rate, freeing the NIOS2 to do other things. An interrupt is used to signal to the NIOS2 that new values are available (implementation example in "signal_uart_small.c" under "programs" folder)
 
 Sample Rate: 100Hz
 Number of Taps: 16
@@ -22,7 +26,7 @@ The module "signal_path_nios_top_mod.v" contains an instance of the signal path 
 
 ## Developing Code
 1. Create a NIOS2 project in eclipse from the "Hello_World" template (do not use hello_world_small)
-2. Copy the code from "programs/accel_test.c" and run it
+2. Copy the code from "programs/signal_uart_small.c" and run it
 3. x-axis data is diaplyed on HEX5-4 and y-axis data on HEX1-0. SW1-0 select the x-axis filter coefficient bank and SW3-2 select the y-axis filter coefficient bank
 
 Note: When displaying values on the 7seg displays, the NIOS2 stores the value to a PIO register. The decoding is handled in hardware by dedicated hex_to_7seg modules

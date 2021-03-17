@@ -96,9 +96,8 @@ module signal_path_nios_top_mod(
     logic[7:0] d1;
 
     always_comb begin
-        LEDR[0] = ready;
-        LEDR[9:8] = x_bank;
-        LEDR[6:5] = y_bank;
+        LEDR = led;
+
         ARDUINO_IO[8] = ready;
         ARDUINO_IO[9] = data_interrupt;
         result = x_read;
@@ -107,7 +106,6 @@ module signal_path_nios_top_mod(
         update_axis = update_ctrl[7:6];
         update_bank = update_ctrl[5:4];
         update_index = update_ctrl[3:0];
-        // update_value = GPIO[31:16];
     end
 
     hex_to_7seg disp0(HEX0, d1[3:0]);
@@ -130,7 +128,7 @@ module signal_path_nios_top_mod(
         .x_coeff_bank_export    (x_bank),     //    x_coeff_bank.export
         .y_coeff_bank_export    (y_bank),     //    y_coeff_bank.export
 		.z_coeff_bank_export    (z_bank),     //    z_coeff_bank.export
-        .switch_export          (SW)           //          switch.export
+        .switch_export          ({!KEY[1],SW})           //          switch.export
 	);
 
     signal_path_16_tap sig_path(

@@ -69,8 +69,8 @@ https://fpgasoftware.intel.com/eula.
 	(port
 		(pt 0 432)
 		(input)
-		(text "switch_export[9..0]" (rect 0 0 74 12)(font "Arial" (font_size 8)))
-		(text "switch_export[9..0]" (rect 4 421 118 432)(font "Arial" (font_size 8)))
+		(text "switch_export[10..0]" (rect 0 0 77 12)(font "Arial" (font_size 8)))
+		(text "switch_export[10..0]" (rect 4 421 124 432)(font "Arial" (font_size 8)))
 		(line (pt 0 432)(pt 144 432)(line_width 3))
 	)
 	(port
