@@ -14,36 +14,22 @@ mode_change = threading.Condition()
 
 # ----------------MQTT Settings-----------------
 
-def on_publish(client, userdata, mid):
-    logging.debug("publishing message no.: "+str(mid))
-    pass
-
-def on_connect_accel(client, obj, flags, rc):
-    if rc == 0:
-        logging.debug("Accel connected")
-    else:
-        logging.debug("Bad connection")
-
-def on_connect_bomb(client, obj, flags, rc):
-    if rc == 0:
-        logging.debug("Bomb connected")
-        client.subscribe("info/bomb", qos = 1)
-    else:
-        logging.debug("Bad connection")
-
-def on_message(client, obj, msg):
-    logging.debug(msg.topic + " " + str(msg.payload))
-
 class mqtt_client:
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, username):
         self.brokerip = ip
         self.brokerport = port
-        self.accel_client = paho.Client("node1")
-        self.bomb_client = paho.Client("node2")
-        self.accel_client.on_connect = on_connect_accel
-        self.bomb_client.on_connect = on_connect_bomb
-        self.accel_client.on_publish = on_publish
-        self.bomb_client.on_message = on_message
+        self.playername = username
+        self.accel_client = paho.Client("accel_"+self.playername)
+        self.bomb_client = paho.Client("bomb_"+self.playername)
+        self.game_client = paho.Client("game_"+self.playername)
+        self.accel_client.on_connect = self.on_connect_accel
+        self.accel_client.on_publish = self.on_publish_accel
+        self.bomb_client.on_connect = self.on_connect_bomb
+        self.bomb_client.on_message = self.on_message_bomb
+        self.game_client.on_connect = self.on_connect_game
+        self.game_client.on_subscribe = self.on_sub_game
+        self.game_client.on_message = self.on_message_game
+        self.game_client.on_publish = self.on_publish_game
         # self.username = "siyu"
         # self.password = "password"
 
@@ -51,13 +37,13 @@ class mqtt_client:
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
-            self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.accel_client.tls_insecure_set(True)
-            self.bomb_client.tls_insecure_set(True)
+            # self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            # self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            # self.accel_client.tls_insecure_set(True)
+            # self.bomb_client.tls_insecure_set(True)
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
-
+            self.game_client.connect(self.brokerip, self.brokerport)
         except:
             logging.debug("Connection Failed")
             exit(1)
@@ -66,11 +52,53 @@ class mqtt_client:
         logging.debug("Client Started")
         self.bomb_client.loop_start()
         self.accel_client.loop_start()
+        self.game_client.loop_start()
+        index = 0
         while True:
             sensor_data = speed_data.get()
-            self.accel_client.publish("info/speed", "Device1:"+str(sensor_data), qos=1)
-            # time.sleep(0.5)
             logging.debug(sensor_data)
+            self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
+            time.sleep(0.5)
+            if (index == 10):
+                self.game_client.publish("info/game", self.playername+":Ready", qos=1)
+            index +=1
+
+    def on_publish_accel(self, client, userdata, mid):
+        logging.debug("publishing message no.: "+str(mid))
+
+    def on_connect_accel(self, client, obj, flags, rc):
+        if rc == 0:
+            logging.debug("Accel connected")
+        else:
+            logging.debug("Bad connection")
+
+    def on_connect_bomb(self, client, obj, flags, rc):
+        if rc == 0:
+            logging.debug("Bomb connected")
+            client.subscribe("info/bomb", qos = 1)
+        else:
+            logging.debug("Bad connection")
+
+    def on_publish_game(self, client, userdata, mid):
+        logging.debug("Publishing on Game Topic: " + str(mid))
+
+    def on_sub_game(self, client, userdata, mid, granted_qos):
+        logging.debug("Subscribed: "+str(mid)+" "+str(granted_qos))
+
+    def on_connect_game(self, client, obj, flags, rc):
+        if rc == 0:
+            logging.debug("Game connected!")
+            client.subscribe("info/game", qos = 1)
+            client.publish("info/game", self.playername+":join", qos = 1)
+        else:
+            logging.debug("Bad connection", )
+
+    def on_message_game(self, client, obj, msg):
+        logging.debug(msg.topic + " " + str(msg.payload))
+
+
+    def on_message_bomb(self, client, obj, msg):
+        logging.debug(msg.topic + " " + str(msg.payload))
 
 # ----------------UART Data-----------------
 def generate_random():
@@ -79,8 +107,6 @@ def generate_random():
     while True:
         speed_data.put(randint(0,10))
         time.sleep(0.5)
-        if (index == 1000):
-            break
         index += 1
     logging.debug("Exiting Generation")
 
@@ -136,7 +162,8 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 def main():
-    mqtt = mqtt_client("13.212.218.108", 8883)
+    # mqtt = mqtt_client("13.212.218.108", 8883)
+    mqtt = mqtt_client("localhost", 1883, "siting")
     mqtt.connect()
     x = threading.Thread(target=generate_random)
     # x = threading.Thread(target=receive_val, args={'o'})
