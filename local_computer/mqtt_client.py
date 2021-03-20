@@ -3,7 +3,6 @@ import time
 import threading,queue
 import logging
 from random import randint
-import subprocess
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -110,56 +109,13 @@ def generate_random():
         index += 1
     logging.debug("Exiting Generation")
 
-def receive_val(cmd):
-    logging.debug("Starting FPGA UART")
-    inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
- 
-    process = subprocess.Popen(inputCmd, shell=True,
-                                executable='/bin/bash' , 
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE)
-    index = 0
-    while True:
-        output = process.stdout.readline()
-        # if process.poll() is not None and output == b'':
-        #     break
-        time.sleep(0.5)
-        output = output.decode("utf-8")
-        tmp = output.split()
-        logging.debug(tmp)
-        try:
-            # if (len(tmp[-1]) == 8):
-            out = twos_comp(int(tmp[-1],16), 32)
-            absolute_out = -1 * int(out)
-            speed_data.put(absolute_out)
-            move = absolute_out / 300 * 800
-            # print(move)
-            # movement_data.append(move)
-            # print(tmp[-1])
-            # print(speed_data)
-        except:
-            pass  
-        if (index == 50):
-            # stdout_val = process.communicate(input="o".encode())[0]
-            
-            # logging.debug(stdout_val.decode('utf-8'))
-            break
-        elif (index == 10):
-            stdout_val = process.communicate(input="f".encode())[0]
-            print(stdout_val)
-            # process.stdin.write(b'f\n')
-            # process.stdin.flush()
-            # print(process.stdout.readline())
-            logging.debug("Sending mode")
-        index += 1
-    
-    logging.debug("Closing UART")
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val"""
     if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
         val = val - (1 << bits)        # compute negative value
     return val                         # return positive value as is
+
 
 def main():
     # mqtt = mqtt_client("13.212.218.108", 8883)
