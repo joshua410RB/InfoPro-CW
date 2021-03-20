@@ -1,9 +1,11 @@
 import paho.mqtt.client as paho
 import time 
+import json
 import threading
 import logging
 from database import *
 from queue import Queue
+import random
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -15,25 +17,31 @@ class Game:
         self.brokerport = port
         self.bomb_server = paho.Client("BombHandler")
         self.game_server = paho.Client("GameHandler")
+        self.rank_server = paho.Client("RankHandler")
         self.bomb_server.on_connect = self.on_connect_bomb
         self.bomb_server.on_publish = self.on_publish_bomb
+        self.bomb_server.on_message = self.on_message_bomb
         self.game_server.on_connect = self.on_connect_game
         self.game_server.on_message = self.on_message_game
+        self.rank_server.on_connect = self.on_connect_rank
+        self.rank_server.on_publish = self.on_publish_rank
         self.username = "siyu"
         self.password = "password"
 
         # game data
+        # global game started 
         self.started = False
-        self.people = {}
-        self.leaderboard = []
+        self.players = {}
+        self.leaderboard = {}
         self.joining = Queue()
-        self.bombs = Queue()
+        self.bombcount = 0
 
         # threads and starting processes
         self.mqtt_thread = threading.Thread(target=self.start_server_handler)
         self.join_thread = threading.Thread(target=self.handle_join)
         self.leaderboard_thread = threading.Thread(target=self.handle_leaderboard)
         self.bomb_thread = threading.Thread(target=self.handle_bomb)
+        self.start_thread = threading.Thread(target=self.handle_start)
         self.connect()
         self.threadstart()
 
@@ -41,8 +49,10 @@ class Game:
         try:
             self.bomb_server.username_pw_set(self.username, self.password)
             self.game_server.username_pw_set(self.username, self.password)
+            self.rank_server.username_pw_set(self.username, self.password)
             self.bomb_server.connect(self.brokerip, self.brokerport)    
-            self.game_server.connect(self.brokerip, self.brokerport)      
+            self.game_server.connect(self.brokerip, self.brokerport)   
+            self.rank_server.connect(self.brokerip, self.brokerport)   
 
         except:
             logging.debug("Connection Failed")
@@ -53,8 +63,10 @@ class Game:
         self.join_thread.start()
         self.bomb_thread.start()
         self.leaderboard_thread.start()
+        self.start_thread.start()
 
-    # MQTT Callbacks    
+    # MQTT Callbacks   
+    # bomb 
     def on_connect_bomb(self, client, obj, flags, rc):
         if rc == 0:
             logging.debug("Bomb Control connected")
@@ -63,8 +75,15 @@ class Game:
             logging.debug("Bad connection")
 
     def on_publish_bomb(self, client, userdata, mid):
-        logging.debug("Publishing on Bomb Topic: " + str(mid))
+        pass
+        # logging.debug("Publishing on Bomb Topic: " + str(mid))
 
+    def on_message_bomb(self, client, userdata, msg):
+        if str(msg.payload.decode("utf-8")) == "sendback":
+            self.bombcount += 1
+            logging.debug("got back bomb")
+
+    # game: start, ready, end
     def on_connect_game(self, client, obj, flags, rc):
         if rc == 0:
             logging.debug("Game Control connected")
@@ -72,50 +91,91 @@ class Game:
         else:
             logging.debug("Bad connection")
 
-    def on_message_game(self, client, userdata, msg):        
-        name, action = str(msg.payload.decode("utf-8")).split(":")
-        if action == "join":
-        # decode name to string
-            self.joining.put(name)
-            logging.debug(str(msg.topic)+" "+str(name)+" joined")
-    
+    def on_message_game(self, client, userdata, msg):
+        if str(msg.payload.decode("utf-8")) != "start":
+            name, action = str(msg.payload.decode("utf-8")).split(":")
+            if action == "join":
+                if not self.started:
+                    # if game started cannot join anymore
+                    self.joining.put(name)
+            elif action == "ready":
+                logging.debug(name+" is ready")
+                self.players[name].status = 1
+            elif action == 'end':
+                logging.debug(name+" ended")
+                self.players[name].status = 2
+
+    # rank: leaderboards
+    def on_connect_rank(self, client, obj, flags, rc):
+        if rc == 0:
+            logging.debug("Leaderboard Control started")
+        else:
+            logging.debug("Bad connection")
+
+    def on_publish_rank(self, client, userdata, mid):
+        logging.debug("Publishing on Leaderboard Topic: " + str(mid))
+
     # Handlers
     def handle_join(self):
         while True:
             while not self.joining.empty():
                 name = self.joining.get()
-                if name in self.people:
+                if name in self.players:
                     continue
-                logging.debug("Created "+name+" player")
-                self.people[name] = Player(self.brokerip, self.brokerport, name)
+                self.players[name] = Player(self.brokerip, self.brokerport, name)
 
-    def handle_gameend(self):
-        pass
+    def handle_start(self):
+        while True:
+            time.sleep(3)
+            if self.started:
+                # if all players end then game ends
+                if all(player.status == 2 for (_, player) in self.players.items()):
+                    self.started = False
+                    logging.debug("game ended!")
+
+                    # send last leaderboard to everyone
+                    # reset everyone's status to not ready so we acn play again
+                    self.handle_leaderboard(True)
+                    for _, player in self.players.items():
+                        player.status = 0
+            else:
+                if len(self.players) == 0:
+                    # cannot start if nobody join yet
+                    continue
+                # if all players are ready, start game
+                # do it every 5s to let them join slowly
+                if all(player.status == 1 for (_, player) in self.players.items()):
+                    self.started = True
+                    # send start to everyone
+                    self.game_server.publish("info/game", "start", qos=1)
+                    logging.debug("game started!!!!")
+
 
     def handle_bomb(self):
         while True:
-            pass
-            # if self.bombcount is 0:
-            #     # end out a bomb!!! and choose who
-            #     self.bombcount = 1
-            #     name = "Device1"
-            #     self.mqtt.bomb_server.publish("info/bomb", name)
-            # while not self.bombs.empty():
-            #     logging.debug("sendingbomb")
-            #     name = self.bombs.get().split(":")
+            time.sleep(3)
+            if self.bombcount == 0 and self.started:
+                # send out a bomb!!! and rng who heheh
+                self.bombcount -= 1
+                name, _ = random.choice(list(self.players.items()))
+                logging.debug("sent bomb to "+name)
+                self.bomb_server.publish("info/bomb", name)
 
-    def handle_leaderboard(self):
+    def handle_leaderboard(self, last = False):
         while True:
-            # if not self.started:
-            #     self.started = True
-            
-            # if(self.started):
-            # TODO : Publish to leaderboard as JSON and convert to int
-            for _, player in self.people.items():
-                logging.debug(player.playername+": "+str(player.dist))
+            if(self.started or last):
+                logging.debug("publish leaderboard")
+                for name, player in self.players.items():
+                    self.leaderboard[name] = int(player.dist)
+                    sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
+                    self.leaderboard = {k: v for k,v in sorted_tuples}
+                    logging.debug(name+": "+str(self.leaderboard[name])+"m")
 
-            time.sleep(1)
-    
+                    leaderboard_data = json.dumps(self.leaderboard)
+                    self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
+
+                time.sleep(1)
+
     def start_server_handler(self):
         logging.debug("Server Started")
         self.bomb_server.loop_start()
@@ -146,6 +206,7 @@ class Player:
         self.speed = 0
         self.position = 1
         self.speedq = Queue()
+        self.status = 0 # 0 = not ready, 1 = ready, 2 = ended
         
         # threads and starting processes
         self.speedthread = threading.Thread(target=self.handle_speed)
@@ -162,7 +223,7 @@ class Player:
             exit(1)
         
     def start(self):
-        logging.debug("Player Created")
+        logging.debug(self.playername+" created")
         self.accel_server.loop_start()
         while True:
             time.sleep(5)
@@ -173,10 +234,10 @@ class Player:
 
     # MQTT Callbacks    
     def on_subscribe_accel(self, client, userdata, mid, granted_qos):
-        logging.debug("Accel Subscribed: "+str(mid)+" "+str(granted_qos))
+        logging.debug("Accel Subscribed: "+self.playername+str(granted_qos))
 
     def on_message_accel(self, client, userdata, msg):
-        logging.debug(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))  
+        # logging.debug(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))  
         speed = int(msg.payload.decode("utf-8"))
         self.speedq.put(speed)
         
@@ -192,9 +253,12 @@ class Player:
     def handle_speed(self):
         while True:
             while not self.speedq.empty():
+                if self.status is 0 or self.status is 2:
+                    continue
                 speed = self.speedq.get()
                 self.calcDist(int(speed))
 
+    # assumes linear acceleration between speed datas
     def calcDist(self, newspeed):
         self.prev_speed = self.speed 
         self.speed = newspeed
