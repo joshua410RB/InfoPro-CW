@@ -16,7 +16,7 @@ mode_change = threading.Condition()
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username):
+    def __init__(self, ip, port, username, accel_data):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -37,6 +37,7 @@ class mqtt_client:
         self.rank_client.on_subscribe =self.on_sub_rank
         # self.username = "siyu"
         # self.password = "password"
+        self.accel_data = accel_data
 
         # game details
         self.started = False
@@ -69,8 +70,8 @@ class mqtt_client:
         while True:
             if self.started:
                 # start sending speed data
-                if not speed_data.empty():
-                    sensor_data = speed_data.get()
+                if not self.accel_data.empty():
+                    sensor_data = self.accel_data.get()
                     if self.bombed:
                         sensor_data = int(sensor_data/2)
                     logging.debug("Speed: "+str(sensor_data))
