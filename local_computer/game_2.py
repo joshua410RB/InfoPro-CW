@@ -65,7 +65,8 @@ class Game():
         self.end_flag = end_flag
         self.gameStart = False
         self.gameExit = False
-    
+        self.leaderboard = leaderboard_object
+
     def item(self, thingx, thingy, thingw, thingh, color):
         self.screen.blit(self.bombImg,(thingx,thingy))
 
@@ -96,7 +97,7 @@ class Game():
         self.screen.fill(self.white)
         self.ready_flag.clear()
         while not self.gameStart:            
-            text_font = pygame.font.Font('Roboto-Regular.ttf',80)
+            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',80)
             start_text, start_rect = self.text_objects("Racing Game", text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -108,7 +109,7 @@ class Game():
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
-            button_text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+            button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Start Game", button_text_font)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)
@@ -126,7 +127,7 @@ class Game():
     def multiplayer_screen(self):
         self.screen.fill(self.white)
         while not self.ready_flag.is_set():            
-            text_font = pygame.font.Font('Roboto-Regular.ttf',80)
+            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',80)
             start_text, start_rect = self.text_objects("Multiplayer Mode", text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -138,7 +139,7 @@ class Game():
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
-            button_text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+            button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)
@@ -155,7 +156,7 @@ class Game():
 
         self.screen.fill(self.white)
         while not self.start_flag.is_set():
-            text_font = pygame.font.Font('Roboto-Regular.ttf',50)
+            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',50)
             waiting_text, waiting_rect = self.text_objects("Game is starting soon...", text_font)
             waiting_rect.center = ((self.display_width/2),(self.display_height/2-100))
             self.screen.blit(waiting_text, waiting_rect)
@@ -182,7 +183,7 @@ class Game():
         obstacle_speed = 7
         obstacle_width = obstacle_height =100
         item_width = item_height = 50
-        text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+        text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
         
         player_group  = pygame.sprite.Group()
         player = Player(x, y)
@@ -196,6 +197,10 @@ class Game():
             obstacle_speed = self.y_data.get()
             if int(pygame.time.get_ticks() - start_time)//1000 > 15:
                 break
+            
+
+                
+                
             currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), text_font)
             currspeed_rect.center = ((self.display_width-700),(self.display_height-500))
             time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", text_font)
@@ -248,6 +253,15 @@ class Game():
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
 
+            margin = 500
+            print("Leaderboard")
+            print(self.leaderboard)
+            for name, dist in self.leaderboard.items():
+                lb_text, lb_rect = self.text_objects(str(name)+": "+str(dist)+"m", text_font)
+                lb_rect.center = ((self.display_width-200),(self.display_height-margin))
+                self.screen.blit(lb_text, lb_rect)
+                margin -= 40
+
             if x > self.display_width - self.car_width or x < 0:
                 self.crash()
                 obstacle_starty = 0
@@ -281,7 +295,7 @@ class Game():
     def end_screen(self):
         self.screen.fill(self.white)
         while not self.gameExit:
-            text_font = pygame.font.Font('Roboto-Regular.ttf',80)
+            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',80)
             start_text, start_rect = self.text_objects("Awaiting Results", text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -293,7 +307,7 @@ class Game():
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
-            button_text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+            button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Exit", button_text_font)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)

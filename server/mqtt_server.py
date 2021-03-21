@@ -169,7 +169,6 @@ class Game:
     def handle_leaderboard(self, last = False):
         while True:
             if(self.started or last):
-                logging.debug("publish leaderboard")
                 for name, player in self.players.items():
                     self.leaderboard[name] = int(player.dist)
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)

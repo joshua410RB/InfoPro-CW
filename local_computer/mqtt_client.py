@@ -154,9 +154,11 @@ class mqtt_client:
 
     def on_message_rank(self, client, obj, msg):
         data = str(msg.payload.decode("utf-8", "ignore"))
-        logging.debug("leaderboard: "+data)
+        logging.debug("client leaderboard: "+data)
         data = json.loads(data) # decode json data
-        self.leaderboard = data
+        ## sort by position
+        # sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
+        self.leaderboard.update(data)
 
     # handlers
     def show_leaderboard(self):
