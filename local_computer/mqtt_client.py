@@ -88,7 +88,7 @@ class mqtt_client:
                     self.game_client.publish("info/game", self.playername+":end", qos=1)
             else:
                 # refresh to check if ready every 2s
-                time.sleep(2)
+                time.sleep(0.1)
                 if (self.ready_flag.is_set()):
                     logging.debug(self.playername+" is ready")
                     self.game_client.publish("info/game", self.playername+":ready", qos=1)

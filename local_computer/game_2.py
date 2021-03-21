@@ -250,8 +250,6 @@ class Game():
         item_group.add(item)
 
         while (self.gameStart):         
-
-
             obstacle_speed = self.y_data.get()
 
             if int(pygame.time.get_ticks() - start_time)//1000 > 15:
@@ -367,7 +365,7 @@ class Game():
 
             if (self.final_flag.is_set()):
                 final_text, final_rect = self.text_objects("Final", self.text_font)
-                final_rect.center = ((self.display_width/2),self.display_height/2+60)
+                final_rect.center = ((self.display_width/2),60)
                 self.screen.blit(final_text, final_rect)            
             
             pygame.display.update()

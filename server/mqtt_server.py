@@ -133,7 +133,7 @@ class Game:
     def handle_start(self):
         while True:
             if self.started:
-                time.sleep(3) # check if all players ended every 3s
+                time.sleep(0.01)
                 # if all players end then game ends
                 if all(player.status == 2 for (_, player) in self.players.items()):
                     self.started = False
@@ -147,14 +147,6 @@ class Game:
                         player.speed = 0
                         player.status = 0
             else:
-                for name, player in self.players.items():
-                    self.ready_data[name] = player.status
-                    
-                ready_json = json.dumps(self.ready_data)
-                self.game_server.publish("info/game/ready", ready_json, qos=1)
-                
-                time.sleep(5) # have 5s for people to join before game auto starts
-
                 if len(self.players) == 0:
                     # cannot start if nobody join yet
                     continue
@@ -164,12 +156,20 @@ class Game:
                     self.started = True
                     # send start to everyone
                     self.game_server.publish("info/game", "start", qos=1)
-                    logging.debug("game started!!!!")                    
+                    logging.debug("game started!!!!") 
+                                 
+                for name, player in self.players.items():
+                    self.ready_data[name] = player.status
+                    
+                ready_json = json.dumps(self.ready_data)
+                self.game_server.publish("info/game/ready", ready_json, qos=1)
+                
+                time.sleep(3) # have 5s for people to join before game auto starts
 
 
     def handle_bomb(self):
         while True:
-            time.sleep(3)
+            time.sleep(0.5)
             if self.bombcount == 0 and self.started:
                 # send out a bomb!!! and rng who heheh
                 self.bombcount -= 1
@@ -188,7 +188,7 @@ class Game:
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
                     self.leaderboard = {k: v for k,v in sorted_tuples}
                     logging.debug(name+": "+str(self.leaderboard[name])+"m")
-                    time.sleep(3)
+                    time.sleep(0.5)
                     leaderboard_data = json.dumps(self.leaderboard)
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
 
