@@ -71,6 +71,7 @@ class mqtt_client:
         self.game_client.loop_start()
         self.rank_client.loop_start()
         time.sleep(2)
+        send_count = 0
         while True:
             if self.started:
                 # start sending speed data
@@ -88,10 +89,10 @@ class mqtt_client:
                     self.game_client.publish("info/game", self.playername+":end", qos=1)
             else:
                 # refresh to check if ready every 2s
-                time.sleep(0.1)
-                if (self.ready_flag.is_set()):
+                if (self.ready_flag.is_set() and send_count<3):
                     logging.debug(self.playername+" is ready")
                     self.game_client.publish("info/game", self.playername+":ready", qos=1)
+                    send_count+= 1
 
     # MQTT callbacks
     # speed 
@@ -171,8 +172,8 @@ class mqtt_client:
             data = str(msg.payload.decode("utf-8", "ignore"))
             logging.debug("client leaderboard: "+data)
             data = json.loads(data) # decode json data
-            ## sort by position
-            # sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
+            # sort by position
+            sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
             self.leaderboard.update(data)
 
     # handlers
