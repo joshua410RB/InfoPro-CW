@@ -1,7 +1,10 @@
 import pygame
 import time
 import random
-import queue
+try: 
+    import queue
+except ImportError:
+    import Queue as queue
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
@@ -19,7 +22,12 @@ class Player(pygame.sprite.Sprite):
             return True
         else:
             return False
-    
+
+    #JEONGIN
+    def item_collect(self, item_group):
+	item_hit = pygame.sprite.spritecollide(self, item_group, True)
+	if item_hit:
+	    self.bombnumber +=1
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
@@ -38,6 +46,11 @@ class Item(pygame.sprite.Sprite):
         self.rect.center = [pos_x, pos_y]
     def update(self, pos_x, pos_y):
         self.rect.center = [pos_x, pos_y]
+	if collected:
+	    self.kill()
+    #JEONGIN
+    def collected(self):
+	collected = pygame.sprite.spritecollide(self, player_group, True) 
 
 class Game():
     def __init__(self, x_data, y_data, ready_flag, start_flag, final_flag, leaderboard_object, ready_object, end_flag, display_width = 800, display_height = 600):
@@ -58,6 +71,7 @@ class Game():
         self.clock = pygame.time.Clock()
         # Set game objects
         self.bombImg = pygame.image.load('img/bomb.png')
+	self.bombnumber = 0	#JEONGIN
         self.x_data = x_data
         self.y_data = y_data
         self.ready_flag = ready_flag
@@ -87,7 +101,15 @@ class Game():
 
         time.sleep(2)
         # self.game_loop()    
-     
+
+    #JEONGIN
+    def score_display(self, text) :
+    	font = pygame.font.Font('freesansbold.ttf', 80)
+    	TextSurf, TextRect = self.text_objects(text, font)
+        TextRect.center = ((self.display_width/2),(self.display_height))
+        self.screen.blit(TextSurf, TextRect)
+
+
     def crash(self):
         self.message_display('You Crashed')
 
@@ -281,7 +303,15 @@ class Game():
             obstacle_group.draw(self.screen)
             obstacle_group.update(obstacle_startx,obstacle_starty)
 
+	    #JEONGIN
+
             # item_group.draw(self.screen)
+	    item_group.draw(self.screen)
+	    item_group.update(item_startx, item_starty)
+
+	    #show score
+	    score_display(self, bombnumber)
+	    ######
 
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
