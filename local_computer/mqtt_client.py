@@ -9,14 +9,11 @@ import json
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
-speed_data = queue.Queue()
-current_mode = threading.Event()
-mode_change = threading.Condition()
 
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username, accel_data):
+    def __init__(self, ip, port, username, accel_data,ready_flag, start_flag, leaderboard_object, end_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -38,11 +35,14 @@ class mqtt_client:
         # self.username = "siyu"
         # self.password = "password"
         self.accel_data = accel_data
+        self.ready_flag = ready_flag
+        self.start_flag = start_flag
+        self.end_flag = end_flag
 
         # game details
         self.started = False
         self.bombed = False
-        self.leaderboard = {}
+        self.leaderboard = leaderboard_object
 
     def connect(self):
         try:            
@@ -62,6 +62,7 @@ class mqtt_client:
 
     def start_client(self):
         logging.debug("Client Started")
+        self.start_flag.clear()
         self.bomb_client.loop_start()
         self.accel_client.loop_start()
         self.game_client.loop_start()
@@ -76,16 +77,18 @@ class mqtt_client:
                         sensor_data = int(sensor_data/2)
                     logging.debug("Speed: "+str(sensor_data))
                     self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
-                # else:
-                #     # game end
-                #     self.started = False
-                #     logging.debug(self.playername+" finished")
-                #     self.game_client.publish("info/game", self.playername+":end", qos=1)
+                
+                if self.end_flag.is_set():
+                    # if game ended
+                    self.started = False
+                    logging.debug(self.playername+" finished")
+                    self.game_client.publish("info/game", self.playername+":end", qos=1)
             else:
-                # 10s to get ready
-                time.sleep(10)
-                logging.debug(self.playername+" is ready")
-                self.game_client.publish("info/game", self.playername+":ready", qos=1)
+                # refresh to check if ready every 2s
+                time.sleep(2)
+                if (self.ready_flag.is_set()):
+                    logging.debug(self.playername+" is ready")
+                    self.game_client.publish("info/game", self.playername+":ready", qos=1)
 
     # MQTT callbacks
     # speed 
@@ -135,8 +138,8 @@ class mqtt_client:
         message = str(msg.payload.decode("utf-8"))
         if message == "start":
             logging.debug("game started")
+            self.start_flag.set()
             self.started = True
-            # start local timer?
 
     # leaderboards
     def on_sub_rank(self, client, userdata, mid, granted_qos):
@@ -150,17 +153,18 @@ class mqtt_client:
             logging.debug("Bad connection", )
 
     def on_message_rank(self, client, obj, msg):
-        time.sleep(1)
         data = str(msg.payload.decode("utf-8", "ignore"))
-        logging.debug("leaderboard: "+data)
+        logging.debug("client leaderboard: "+data)
         data = json.loads(data) # decode json data
-        self.leaderboard = data
+        ## sort by position
+        # sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
+        self.leaderboard.update(data)
 
     # handlers
     def show_leaderboard(self):
         logging.debug("Printing leaderboard")
         while True:
-            time.sleep(1)
+            pass
             # for name, dist in self.leaderboard.items():
             #     logging.debug(name+": "+str(dist))
 

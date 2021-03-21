@@ -17,7 +17,7 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 
-def uart_handler(cmd, x_data, y_game_data, y_mqtt_data):
+def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_flag, end_flag):
     logging.debug("Starting FPGA UART")
     inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
  
@@ -44,9 +44,11 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data):
                 # logging.debug(str(-converted_x)+", "+str(-converted_y))
                 logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250))
                 try:
-                    x_data.put((-converted_x+250)/600*900)
-                    y_mqtt_data.put(-converted_y+250)
-                    y_game_data.put(-converted_y+250)
+                    if start_flag.is_set() and not end_flag.is_set():
+                        logging.debug("Putting values in queue from fpga")
+                        x_data.put((-converted_x+250)/600*900)
+                        y_mqtt_data.put((-converted_y+250)//30)
+                        y_game_data.put((-converted_y+250)//30)
                 except:
                     pass  
 
