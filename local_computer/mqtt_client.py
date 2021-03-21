@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username, accel_data,ready_flag, start_flag, leaderboard_object, end_flag):
+    def __init__(self, ip, port, username, accel_data, ready_flag, start_flag, final_flag, leaderboard_object, ready_object, end_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -38,11 +38,13 @@ class mqtt_client:
         self.ready_flag = ready_flag
         self.start_flag = start_flag
         self.end_flag = end_flag
+        self.final_flag = final_flag
 
         # game details
         self.started = False
         self.bombed = False
         self.leaderboard = leaderboard_object
+        self.ready = ready_object
 
     def connect(self):
         try:            
@@ -85,7 +87,7 @@ class mqtt_client:
                     self.game_client.publish("info/game", self.playername+":end", qos=1)
             else:
                 # refresh to check if ready every 2s
-                time.sleep(2)
+                time.sleep(1)
                 if (self.ready_flag.is_set()):
                     logging.debug(self.playername+" is ready")
                     self.game_client.publish("info/game", self.playername+":ready", qos=1)
@@ -129,6 +131,7 @@ class mqtt_client:
         if rc == 0:
             logging.debug("Game connected!")
             client.subscribe("info/game", qos = 1)
+            client.subscribe("info/game/ready", qos = 1)
             logging.debug("joined game")
             client.publish("info/game", self.playername+":join", qos = 1)
         else:
@@ -136,10 +139,17 @@ class mqtt_client:
 
     def on_message_game(self, client, obj, msg):
         message = str(msg.payload.decode("utf-8"))
-        if message == "start":
-            logging.debug("game started")
-            self.start_flag.set()
-            self.started = True
+        if msg.topic == 'info/game/ready':
+            # json of ready data
+            data = str(msg.payload.decode("utf-8", "ignore"))
+            logging.debug("client ready data: "+data)
+            data = json.loads(data) # decode json data
+            self.ready.update(data)
+        else:
+            if message == "start":
+                logging.debug("game started")
+                self.start_flag.set()
+                self.started = True
 
     # leaderboards
     def on_sub_rank(self, client, userdata, mid, granted_qos):
@@ -153,6 +163,9 @@ class mqtt_client:
             logging.debug("Bad connection", )
 
     def on_message_rank(self, client, obj, msg):
+        message = str(msg.payload.decode("utf-8"))
+        if message == 'final':
+            self.final_flag.set()
         data = str(msg.payload.decode("utf-8", "ignore"))
         logging.debug("client leaderboard: "+data)
         data = json.loads(data) # decode json data

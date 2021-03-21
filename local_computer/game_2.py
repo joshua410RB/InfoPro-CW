@@ -40,7 +40,7 @@ class Item(pygame.sprite.Sprite):
         self.rect.center = [pos_x, pos_y]
 
 class Game():
-    def __init__(self, x_data, y_data, ready_flag, start_flag, leaderboard_object, end_flag, display_width = 800, display_height = 600):
+    def __init__(self, x_data, y_data, ready_flag, start_flag, final_flag, leaderboard_object, ready_object, end_flag, display_width = 800, display_height = 600):
         self.display_width = display_width
         self.display_height = display_height 
         self.car_width = 73
@@ -62,10 +62,13 @@ class Game():
         self.y_data = y_data
         self.ready_flag = ready_flag
         self.start_flag = start_flag
+        self.final_flag = final_flag
         self.end_flag = end_flag
         self.gameStart = False
         self.gameExit = False
         self.leaderboard = leaderboard_object
+        self.ready = ready_object
+        self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',20)
 
     def item(self, thingx, thingy, thingw, thingh, color):
         self.screen.blit(self.bombImg,(thingx,thingy))
@@ -97,8 +100,7 @@ class Game():
         self.screen.fill(self.white)
         self.ready_flag.clear()
         while not self.gameStart:            
-            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',80)
-            start_text, start_rect = self.text_objects("Racing Game", text_font)
+            start_text, start_rect = self.text_objects("Racing Game", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
@@ -127,12 +129,11 @@ class Game():
     def multiplayer_screen(self):
         self.screen.fill(self.white)
         while not self.ready_flag.is_set():            
-            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',80)
-            start_text, start_rect = self.text_objects("Multiplayer Mode", text_font)
+            start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
-
+            self.update_readystatus(self.display_width/2, self.display_height/2-100)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
                 pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])
@@ -156,10 +157,12 @@ class Game():
 
         self.screen.fill(self.white)
         while not self.start_flag.is_set():
-            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',50)
-            waiting_text, waiting_rect = self.text_objects("Game is starting soon...", text_font)
+            waiting_text, waiting_rect = self.text_objects("Game is starting soon...", self.text_font)
             waiting_rect.center = ((self.display_width/2),(self.display_height/2-100))
             self.screen.blit(waiting_text, waiting_rect)
+            self.update_readystatus(self.display_width/2, self.display_height/2-100)
+            # add players ready status
+            
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -167,6 +170,39 @@ class Game():
                     quit()
 
         self.race_screen()
+
+    def update_readystatus(self, width_margin, height_margin):
+        print(self.ready)
+        lb_title, lb_rect = self.text_objects("In Lobby", self.text_font)
+        lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin))
+        self.screen.blit(lb_title, lb_rect)
+        margin = 40 
+        for name, status in self.ready.items():
+            status_string=""
+            if (status == 0):
+                status_string = "Not Ready"
+            elif (status == 1):
+                status_string = "Ready"
+            else:
+                status_string = "Ended Game"
+
+            lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font)
+            lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
+            self.screen.blit(lb_text, lb_rect)
+            margin -= 40
+
+    def update_leaderboard(self, width_margin, height_margin):
+        print(self.leaderboard)
+        lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font)
+        lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin))
+        self.screen.blit(lb_title, lb_rect)
+        position = 1
+        margin = 40 
+        for name, dist in self.leaderboard.items():
+            lb_text, lb_rect = self.text_objects(str(position) + "st. "+ str(name)+": "+str(dist)+"m", self.text_font)
+            lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
+            self.screen.blit(lb_text, lb_rect)
+            margin -= 40
 
     def race_screen(self):
         start_time = pygame.time.get_ticks()
@@ -183,7 +219,6 @@ class Game():
         obstacle_speed = 7
         obstacle_width = obstacle_height =100
         item_width = item_height = 50
-        text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
         
         player_group  = pygame.sprite.Group()
         player = Player(x, y)
@@ -198,12 +233,10 @@ class Game():
             if int(pygame.time.get_ticks() - start_time)//1000 > 15:
                 break
             
-
                 
-                
-            currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), text_font)
+            currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font)
             currspeed_rect.center = ((self.display_width-700),(self.display_height-500))
-            time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", text_font)
+            time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", self.text_font)
             time_rect.center = ((self.display_width-700),(self.display_height-450))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -253,14 +286,7 @@ class Game():
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
 
-            margin = 500
-            print("Leaderboard")
-            print(self.leaderboard)
-            for name, dist in self.leaderboard.items():
-                lb_text, lb_rect = self.text_objects(str(name)+": "+str(dist)+"m", text_font)
-                lb_rect.center = ((self.display_width-200),(self.display_height-margin))
-                self.screen.blit(lb_text, lb_rect)
-                margin -= 40
+            self.update_leaderboard(200, 500)
 
             if x > self.display_width - self.car_width or x < 0:
                 self.crash()
@@ -293,14 +319,13 @@ class Game():
         self.end_screen()
      
     def end_screen(self):
-        self.screen.fill(self.white)
         while not self.gameExit:
-            text_font = pygame.font.Font('assets/Roboto-Regular.ttf',80)
-            start_text, start_rect = self.text_objects("Awaiting Results", text_font)
+            self.screen.fill(self.white)
+            start_text, start_rect = self.text_objects("Awaiting Results", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
-
+            self.update_leaderboard(self.display_width/2, self.display_height/2-100)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
                 pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])

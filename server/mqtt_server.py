@@ -35,6 +35,7 @@ class Game:
         self.leaderboard = {}
         self.joining = Queue()
         self.bombcount = 0
+        self.ready_data = {}
 
         # threads and starting processes
         self.mqtt_thread = threading.Thread(target=self.start_server_handler)
@@ -131,8 +132,8 @@ class Game:
 
     def handle_start(self):
         while True:
-            time.sleep(0.5)
             if self.started:
+                time.sleep(3) # check if all players ended every 3s
                 # if all players end then game ends
                 if all(player.status == 2 for (_, player) in self.players.items()):
                     self.started = False
@@ -144,16 +145,30 @@ class Game:
                     for _, player in self.players.items():
                         player.status = 0
             else:
+                for name, player in self.players.items():
+                    self.ready_data[name] = player.status
+                    
+                ready_json = json.dumps(self.ready_data)
+                self.game_server.publish("info/game/ready", ready_json, qos=1)
+                
+                time.sleep(5) # have 5s for people to join before game auto starts
+                for name, player in self.players.items():
+                    self.ready_data[name] = player.status
+                    
+                ready_json = json.dumps(self.ready_data)
+                self.game_server.publish("info/game/ready", ready_json, qos=1)
+
+                time.sleep(2)
                 if len(self.players) == 0:
                     # cannot start if nobody join yet
                     continue
+                
                 # if all players are ready, start game
-                # do it every 5s to let them join slowly
                 if all(player.status == 1 for (_, player) in self.players.items()):
                     self.started = True
                     # send start to everyone
                     self.game_server.publish("info/game", "start", qos=1)
-                    logging.debug("game started!!!!")
+                    logging.debug("game started!!!!")                    
 
 
     def handle_bomb(self):
@@ -169,6 +184,8 @@ class Game:
     def handle_leaderboard(self, last = False):
         while True:
             if(self.started or last):
+                if last:
+                    self.rank_server.publish("info/leaderboard", "final", qos=1)
                 for name, player in self.players.items():
                     self.leaderboard[name] = int(player.dist)
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
