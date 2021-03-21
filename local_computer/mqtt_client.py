@@ -65,6 +65,7 @@ class mqtt_client:
     def start_client(self):
         logging.debug("Client Started")
         self.start_flag.clear()
+        self.final_flag.clear()
         self.bomb_client.loop_start()
         self.accel_client.loop_start()
         self.game_client.loop_start()
@@ -87,7 +88,7 @@ class mqtt_client:
                     self.game_client.publish("info/game", self.playername+":end", qos=1)
             else:
                 # refresh to check if ready every 2s
-                time.sleep(1)
+                time.sleep(2)
                 if (self.ready_flag.is_set()):
                     logging.debug(self.playername+" is ready")
                     self.game_client.publish("info/game", self.playername+":ready", qos=1)
@@ -159,19 +160,20 @@ class mqtt_client:
         if rc == 0:
             logging.debug("Rank connected!")
             client.subscribe("info/leaderboard", qos = 1)
+            client.subscribe("info/leaderboard/final", qos = 1)
         else:
             logging.debug("Bad connection", )
 
     def on_message_rank(self, client, obj, msg):
-        message = str(msg.payload.decode("utf-8"))
-        if message == 'final':
+        if msg.topic == "info/leaderboard/final":
             self.final_flag.set()
-        data = str(msg.payload.decode("utf-8", "ignore"))
-        logging.debug("client leaderboard: "+data)
-        data = json.loads(data) # decode json data
-        ## sort by position
-        # sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
-        self.leaderboard.update(data)
+        else:
+            data = str(msg.payload.decode("utf-8", "ignore"))
+            logging.debug("client leaderboard: "+data)
+            data = json.loads(data) # decode json data
+            ## sort by position
+            # sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
+            self.leaderboard.update(data)
 
     # handlers
     def show_leaderboard(self):

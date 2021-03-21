@@ -140,9 +140,11 @@ class Game:
                     logging.debug("game ended!")
 
                     # send last leaderboard to everyone
-                    # reset everyone's status to not ready so we acn play again
+                    # reset everyone's status to not ready so we can play again
                     self.handle_leaderboard(True)
                     for _, player in self.players.items():
+                        player.dist = 0
+                        player.speed = 0
                         player.status = 0
             else:
                 for name, player in self.players.items():
@@ -152,13 +154,7 @@ class Game:
                 self.game_server.publish("info/game/ready", ready_json, qos=1)
                 
                 time.sleep(5) # have 5s for people to join before game auto starts
-                for name, player in self.players.items():
-                    self.ready_data[name] = player.status
-                    
-                ready_json = json.dumps(self.ready_data)
-                self.game_server.publish("info/game/ready", ready_json, qos=1)
 
-                time.sleep(2)
                 if len(self.players) == 0:
                     # cannot start if nobody join yet
                     continue
@@ -185,13 +181,14 @@ class Game:
         while True:
             if(self.started or last):
                 if last:
-                    self.rank_server.publish("info/leaderboard", "final", qos=1)
+                    logging.debug("final leaderboard")
+                    self.rank_server.publish("info/leaderboard/final", "final", qos=1)
                 for name, player in self.players.items():
                     self.leaderboard[name] = int(player.dist)
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
                     self.leaderboard = {k: v for k,v in sorted_tuples}
                     logging.debug(name+": "+str(self.leaderboard[name])+"m")
-
+                    time.sleep(3)
                     leaderboard_data = json.dumps(self.leaderboard)
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
 
@@ -224,7 +221,6 @@ class Player:
         self.dist = 0
         self.prev_speed = 0
         self.speed = 0
-        self.position = 1
         self.speedq = Queue()
         self.status = 0 # 0 = not ready, 1 = ready, 2 = ended
         
@@ -246,9 +242,12 @@ class Player:
         logging.debug(self.playername+" created")
         self.accel_server.loop_start()
         while True:
-            time.sleep(5)
+            pass
     
     def threadstart(self):
+        self.speedthread.daemon = True
+        self.startthread.daemon = True
+
         self.speedthread.start()
         self.startthread.start()
 
