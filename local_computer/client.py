@@ -113,10 +113,11 @@ def game_loop(gameDisplay, clock, carImg, bombImg, itemImg):
         #         if event.key == pygame.K_RIGHT:
         #             x_change = 5
 		if event.key == pygame.K_SPACE:
-	            if len(bomb_xy) <2:
+	            if len(bomb_xy) >0:
 			bomb_x = x + car_width/2
 			bomb_y = y - car_height/4
 			bomb_xy.append([bomb_x,bomb_y])
+			len(bomb_xy) = len(bomb_xy) - 1
         #     if event.type == pygame.KEYUP:
         #         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
         #             x_change = 0
@@ -184,6 +185,10 @@ def game_loop(gameDisplay, clock, carImg, bombImg, itemImg):
 			bomb_xy.remove(bxy)
 		    except:
 			pass
+
+	if len(bomb_xy)! = 0:
+	    for bx, by in bomb_xy
+		bomb(gameDisplay, bombImg, bx, by)
 
         pygame.display.update()
         clock.tick(60)
