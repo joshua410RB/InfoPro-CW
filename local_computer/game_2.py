@@ -145,8 +145,8 @@ class Game():
         self.multiplayer_screen()
 
     def multiplayer_screen(self):
-        self.screen.fill(self.white)
         while not self.ready_flag.is_set():            
+            self.screen.fill(self.white)
             start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -205,7 +205,7 @@ class Game():
             lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font)
             lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
             self.screen.blit(lb_text, lb_rect)
-            margin -= 40
+            margin += 40
 
     def update_leaderboard(self, width_margin, height_margin):
         lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font)
@@ -217,7 +217,8 @@ class Game():
             lb_text, lb_rect = self.text_objects(str(position) + "st. "+ str(name)+": "+str(dist)+"m", self.text_font)
             lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
             self.screen.blit(lb_text, lb_rect)
-            margin -= 40
+            margin += 40
+            position += 1
 
     def race_screen(self):
         print("Go into race screen")

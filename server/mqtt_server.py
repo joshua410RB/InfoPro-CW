@@ -109,8 +109,8 @@ class Game:
             elif action == 'end':
                 logging.debug(name+" ended")
                 self.players[name].status = 2
-                with players[name].speedq.mutex:
-                    players[name].speedq.clear()
+                with self.players[name].speedq.mutex:
+                    self.players[name].speedq.clear()
 
     # rank: leaderboards
     def on_connect_rank(self, client, obj, flags, rc):
