@@ -3,6 +3,42 @@ import time
 import random
 import queue
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = pygame.image.load('img/race_car.png')
+        # self.image = pygame.Surface([width, height])
+        self.rect = self.image.get_rect()
+        self.rect.center = [pos_x, pos_y]
+    def update(self, pos_x, pos_y):
+        self.rect.center = [pos_x, pos_y]
+        
+    def collide(self, obstacle_group):
+        hit = pygame.sprite.spritecollide(self, obstacle_group, True)
+        if len(hit) >0:
+            return True
+        else:
+            return False
+    
+
+class Obstacle(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = pygame.image.load('img/normal_car.png')
+        self.rect = self.image.get_rect()
+        self.rect.center = [pos_x, pos_y]
+    def update(self, pos_x, pos_y):
+        self.rect.center = [pos_x, pos_y]
+
+class Item(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = pygame.image.load('img/bomb.png')
+        self.rect = self.image.get_rect()
+        self.rect.center = [pos_x, pos_y]
+    def update(self, pos_x, pos_y):
+        self.rect.center = [pos_x, pos_y]
+
 class Game():
     def __init__(self, x_data, y_data, display_width = 800, display_height = 600):
         self.display_width = display_width
@@ -21,23 +57,14 @@ class Game():
         pygame.display.set_icon(self.icon)
         self.clock = pygame.time.Clock()
         # Set game objects
-        self.carImg = pygame.image.load('img/race_car.png')
-        self.obstacleImg = pygame.image.load('img/normal_car.png')
         self.bombImg = pygame.image.load('img/bomb.png')
         self.x_data = x_data
         self.y_data = y_data
         self.gameStart = False
         self.gameExit = False
-
-    def obstacles(self, thingx, thingy, thingw, thingh, color):
-        self.screen.blit(self.obstacleImg,(thingx,thingy))
-        # pygame.draw.rect(self.screen, color, [thingx, thingy, thingw, thingh])
-
+    
     def item(self, thingx, thingy, thingw, thingh, color):
         self.screen.blit(self.bombImg,(thingx,thingy))
-
-    def car(self, x,y):
-        self.screen.blit(self.carImg,(x,y))
 
     def text_objects(self, text, font):
         textSurface = font.render(text, True, self.black)
@@ -49,11 +76,19 @@ class Game():
         TextRect.center = ((self.display_width/2),(self.display_height/2))
         self.screen.blit(TextSurf, TextRect)
 
-        pygame.display.update()
+        # pygame.display.update()
 
         time.sleep(2)
-        self.game_loop()
-        
+        # self.game_loop()    
+     
+    def crash(self):
+        self.message_display('You Crashed')
+
+    def game_start(self):
+        self.start_screen()
+        pygame.quit()
+        quit()        
+
     def start_screen(self):
         self.screen.fill(self.white)
         while not self.gameStart:            
@@ -68,11 +103,13 @@ class Game():
                 pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+
             button_text_font = pygame.font.Font('Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Start Game", button_text_font)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)
             pygame.display.update()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -82,12 +119,6 @@ class Game():
                         self.gameStart =True 
         self.race_screen()
 
-
-    def crash(self):
-        self.message_display('You Crashed')
-
-    def game_loop(self):
-        self.start_screen()
 
     def race_screen(self):
         start_time = pygame.time.get_ticks()
@@ -105,8 +136,17 @@ class Game():
         obstacle_width = obstacle_height =100
         item_width = item_height = 50
         text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+        
+        player_group  = pygame.sprite.Group()
+        player = Player(x, y)
+        player_group.add(player)
+
+        obstacle_group  = pygame.sprite.Group()
+        obstacle = Obstacle(obstacle_startx, obstacle_starty)
+        obstacle_group.add(obstacle)
 
         while (self.gameStart and not self.gameExit):
+
             obstacle_speed = self.y_data.get()//30
             currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), text_font)
             currspeed_rect.center = ((self.display_width-700),(self.display_height-500))
@@ -139,33 +179,35 @@ class Game():
 
             # x += x_change
             x = self.x_data.get()
-            print("Test")
+            self.x_data.task_done()
             self.screen.fill(self.grey)
-            # obstacles(thingx, thingy, thingw, thingh, color)
-            self.obstacles(obstacle_startx, obstacle_starty, obstacle_width, obstacle_height, self.black)
             self.item(item_startx, item_starty, item_width, item_height, self.black)
             obstacle_starty += obstacle_speed
             item_starty += obstacle_speed
 
-            self.car(x,y)
+            player_group.draw(self.screen)
+            player_group.update(x,y)
+            check = player.collide(obstacle_group)
+            print(check)
+            if check:
+                self.crash()
+
+            obstacle_group.draw(self.screen)
+            obstacle_group.update(obstacle_startx,obstacle_starty)
+
+            # item_group.draw(self.screen)
+
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
 
             if x > self.display_width - self.car_width or x < 0:
                 self.crash()
+                obstacle_starty = 0
 
             if obstacle_starty > self.display_height:
                 obstacle_starty = 0 - obstacle_height
                 obstacle_startx = random.randrange(0,self.display_width)
 
-            ####
-            if y < obstacle_starty+obstacle_height:
-                print('y crossover')
-
-                if x > obstacle_startx and x < obstacle_startx + obstacle_width or x+self.car_width > obstacle_startx and x + self.car_width < obstacle_startx+obstacle_width:
-                    print('x crossover')
-                    self.crash()
-            ####
 
         # #bomb
         # if len(bomb_xy) != 0:
@@ -183,12 +225,9 @@ class Game():
         #         drawObject(bomb, a_x, a_y)
 
             pygame.display.update()
-            self.clock.tick(60)
+            self.clock.tick(120)
 
-    def game_start(self):
-        self.game_loop()
-        pygame.quit()
-        quit()
+
 
 
 if __name__ == "__main__":
