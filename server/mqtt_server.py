@@ -42,8 +42,6 @@ class Game:
         self.leaderboard_thread = threading.Thread(target=self.handle_leaderboard)
         self.bomb_thread = threading.Thread(target=self.handle_bomb)
         self.start_thread = threading.Thread(target=self.handle_start)
-        self.connect()
-        self.threadstart()
 
     def connect(self):
         try:
@@ -59,6 +57,12 @@ class Game:
             exit(1)
 
     def threadstart(self):
+        self.mqtt_thread.daemon = True
+        self.join_thread.daemon = True
+        self.bomb_thread.daemon = True
+        self.leaderboard_thread.daemon  = True
+        self.start_thread.daemon = True
+        
         self.mqtt_thread.start()
         self.join_thread.start()
         self.bomb_thread.start()
@@ -113,7 +117,8 @@ class Game:
             logging.debug("Bad connection")
 
     def on_publish_rank(self, client, userdata, mid):
-        logging.debug("Publishing on Leaderboard Topic: " + str(mid))
+        pass
+        # logging.debug("Publishing on Leaderboard Topic: " + str(mid))
 
     # Handlers
     def handle_join(self):
@@ -126,7 +131,7 @@ class Game:
 
     def handle_start(self):
         while True:
-            time.sleep(3)
+            time.sleep(0.5)
             if self.started:
                 # if all players end then game ends
                 if all(player.status == 2 for (_, player) in self.players.items()):
@@ -174,15 +179,14 @@ class Game:
                     leaderboard_data = json.dumps(self.leaderboard)
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
 
-                time.sleep(1)
-
     def start_server_handler(self):
         logging.debug("Server Started")
         self.bomb_server.loop_start()
+        self.rank_server.loop_start()
         self.game_server.loop_start()
         # bomb_event = 1
         while True:
-            time.sleep(2)
+            pass
         # while True:
         #     (rc, mid) = self.bomb_server.publish("info/bomb", str(bomb_event), qos=1)
         #     time.sleep(5)
@@ -265,7 +269,12 @@ class Player:
         self.dist += 1/2*(self.speed + self.prev_speed)*0.1 # timestep
 
 def main():
-    Game("localhost", 1883)
+    game = Game("localhost", 1883)
+    game.connect()
+    game.threadstart()
+
+    while True:
+        pass
 
 if __name__ == "__main__":
     main()

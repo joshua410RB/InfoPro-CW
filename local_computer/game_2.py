@@ -40,7 +40,7 @@ class Item(pygame.sprite.Sprite):
         self.rect.center = [pos_x, pos_y]
 
 class Game():
-    def __init__(self, x_data, y_data, display_width = 800, display_height = 600):
+    def __init__(self, x_data, y_data, ready_flag, start_flag, leaderboard_object, end_flag, display_width = 800, display_height = 600):
         self.display_width = display_width
         self.display_height = display_height 
         self.car_width = 73
@@ -60,6 +60,9 @@ class Game():
         self.bombImg = pygame.image.load('img/bomb.png')
         self.x_data = x_data
         self.y_data = y_data
+        self.ready_flag = ready_flag
+        self.start_flag = start_flag
+        self.end_flag = end_flag
         self.gameStart = False
         self.gameExit = False
     
@@ -91,6 +94,7 @@ class Game():
 
     def start_screen(self):
         self.screen.fill(self.white)
+        self.ready_flag.clear()
         while not self.gameStart:            
             text_font = pygame.font.Font('Roboto-Regular.ttf',80)
             start_text, start_rect = self.text_objects("Racing Game", text_font)
@@ -117,8 +121,51 @@ class Game():
                 if event.type == pygame.MOUSEBUTTONDOWN: 
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
                         self.gameStart =True 
-        self.race_screen()
+        self.multiplayer_screen()
 
+    def multiplayer_screen(self):
+        self.screen.fill(self.white)
+        while not self.ready_flag.is_set():            
+            text_font = pygame.font.Font('Roboto-Regular.ttf',80)
+            start_text, start_rect = self.text_objects("Multiplayer Mode", text_font)
+            start_rect.center = ((self.display_width/2),(self.display_height/2-50))
+    
+            self.screen.blit(start_text, start_rect)
+
+            mouse = pygame.mouse.get_pos() 
+            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
+                pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+            else:
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+
+            button_text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+            startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font)
+            startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
+            self.screen.blit(startbutton_text, startbutton_rect)
+            pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.MOUSEBUTTONDOWN: 
+                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
+                        self.ready_flag.set()
+        print("Out of Ready Loop")
+
+        self.screen.fill(self.white)
+        while not self.start_flag.is_set():
+            text_font = pygame.font.Font('Roboto-Regular.ttf',50)
+            waiting_text, waiting_rect = self.text_objects("Game is starting soon...", text_font)
+            waiting_rect.center = ((self.display_width/2),(self.display_height/2-100))
+            self.screen.blit(waiting_text, waiting_rect)
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+        self.race_screen()
 
     def race_screen(self):
         start_time = pygame.time.get_ticks()
@@ -145,9 +192,10 @@ class Game():
         obstacle = Obstacle(obstacle_startx, obstacle_starty)
         obstacle_group.add(obstacle)
 
-        while (self.gameStart and not self.gameExit):
-
-            obstacle_speed = self.y_data.get()//30
+        while (self.gameStart):
+            obstacle_speed = self.y_data.get()
+            if int(pygame.time.get_ticks() - start_time)//1000 > 15:
+                break
             currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), text_font)
             currspeed_rect.center = ((self.display_width-700),(self.display_height-500))
             time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", text_font)
@@ -166,7 +214,7 @@ class Game():
                 #         obstacle_speed += 3                   
                 #     if event.key == pygame.K_DOWN:
                 #         obstacle_speed -= 3
-            #bomb
+            # bomb
             # if event.type == pygame.K_SPACE:
             #     if len(bomb_xy) <2:
             #         bomb_x = x + car_width/2
@@ -227,7 +275,38 @@ class Game():
             pygame.display.update()
             self.clock.tick(120)
 
+        self.end_flag.set()
+        self.end_screen()
+     
+    def end_screen(self):
+        self.screen.fill(self.white)
+        while not self.gameExit:
+            text_font = pygame.font.Font('Roboto-Regular.ttf',80)
+            start_text, start_rect = self.text_objects("Awaiting Results", text_font)
+            start_rect.center = ((self.display_width/2),(self.display_height/2-50))
+    
+            self.screen.blit(start_text, start_rect)
 
+            mouse = pygame.mouse.get_pos() 
+            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
+                pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+            else:
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+
+            button_text_font = pygame.font.Font('Roboto-Regular.ttf',15)
+            startbutton_text, startbutton_rect = self.text_objects("Exit", button_text_font)
+            startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
+            self.screen.blit(startbutton_text, startbutton_rect)
+            pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.MOUSEBUTTONDOWN: 
+                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
+                        self.gameExit = True
+        self.start_screen()
 
 
 if __name__ == "__main__":
