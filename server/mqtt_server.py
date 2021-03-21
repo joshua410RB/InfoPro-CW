@@ -109,6 +109,8 @@ class Game:
             elif action == 'end':
                 logging.debug(name+" ended")
                 self.players[name].status = 2
+                with players[name].speedq.mutex:
+                    players[name].speedq.clear()
 
     # rank: leaderboards
     def on_connect_rank(self, client, obj, flags, rc):
@@ -222,7 +224,9 @@ class Player:
         self.prev_speed = 0
         self.speed = 0
         self.speedq = Queue()
-        self.status = 0 # 0 = not ready, 1 = ready, 2 = ended
+        self.status = 0 
+        # 0 = not ready, 1 = ready, 2 = ended
+        # think should add 2 = started and 3 = ended
         
         # threads and starting processes
         self.speedthread = threading.Thread(target=self.handle_speed)
@@ -258,12 +262,12 @@ class Player:
     def on_message_accel(self, client, userdata, msg):
         # logging.debug(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))  
         speed = int(msg.payload.decode("utf-8"))
-        self.speedq.put(speed)
+        if self.status == 1:
+            self.speedq.put(speed)
         
     def on_connect_accel(self, client, obj, flags, rc):
         if rc == 0:
             logging.debug("Accel connected")
-            # not working bc playername is not just "Device" its b'Device
             client.subscribe("info/speed/"+self.playername, qos = 1)
         else:
             logging.debug("Bad connection")

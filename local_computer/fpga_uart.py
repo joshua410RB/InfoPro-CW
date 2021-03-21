@@ -31,17 +31,18 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_flag, end_flag):
         # if process.poll() is not None and output == b'':
         #     break
         output = output.decode("utf-8")
-        logging.debug(output)
+        # logging.debug(output)
         if (index >5):
-            tmp = re.split('; |, |:|\r|\n', output)
-            logging.debug(tmp)
-            if len(tmp) > 4:
-                current_x = tmp[1]
-                current_y = tmp[3]
+            tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
+            # logging.debug(tmp[1].split("|"))
+            tmp = tmp[1].split("|")
+            if len(tmp) > 2:
+                current_x = tmp[0]
+                current_y = tmp[1]
                 # logging.debug(current_x+", "+current_y)
-                converted_x = twos_comp(int(current_x, 16),32)
-                converted_y = twos_comp(int(current_y, 16),32)
-                # logging.debug(str(-converted_x)+", "+str(-converted_y))
+                converted_x = twos_comp(int(current_x, 16),16)
+                converted_y = twos_comp(int(current_y, 16),16)
+                logging.debug(str(-converted_x)+", "+str(-converted_y))
                 logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250))
                 try:
                     if start_flag.is_set() and not end_flag.is_set():
@@ -98,5 +99,5 @@ if __name__ == "__main__":
     x_data = queue.Queue()
     y_game_data = queue.Queue()
     y_mqtt_data = queue.Queue()
-    # uart_handler('o',x_data,y_game_data, y_mqtt_data)
-    uartHandler()
+    uart_handler('o',x_data,y_game_data, y_mqtt_data,start_flag=None, end_flag=None)
+    # uartHandler()
