@@ -34,7 +34,7 @@ if __name__ == "__main__":
     fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_flag, end_flag))
 
     # Start Thread for MQTT Client Start Client     
-    mqtt = mqtt_client("202.166.44.20", 32552, "siyu", y_mqtt_data, ready_flag, start_flag, final_flag, leaderboard_object, ready_object, end_flag)
+    mqtt = mqtt_client("202.166.44.20", 32552, "sitingisnoob", y_mqtt_data, ready_flag, start_flag, final_flag, leaderboard_object, ready_object, end_flag)
     mqtt.connect()
     mqtt_thread = threading.Thread(target=mqtt.start_client)    
     

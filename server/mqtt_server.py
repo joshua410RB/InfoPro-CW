@@ -110,7 +110,7 @@ class Game:
                 logging.debug(name+" ended")
                 self.players[name].status = 2
                 with self.players[name].speedq.mutex:
-                    self.players[name].speedq.clear()
+                    self.players[name].speedq.queue.clear()
 
     # rank: leaderboards
     def on_connect_rank(self, client, obj, flags, rc):

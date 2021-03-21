@@ -214,7 +214,7 @@ class Game():
         position = 1
         margin = 40 
         for name, dist in self.leaderboard.items():
-            lb_text, lb_rect = self.text_objects(str(position) + "st. "+ str(name)+": "+str(dist)+"m", self.text_font)
+            lb_text, lb_rect = self.text_objects(str(position) + ". "+ str(name)+": "+str(dist)+"m", self.text_font)
             lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
             self.screen.blit(lb_text, lb_rect)
             margin += 40
