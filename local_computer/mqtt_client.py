@@ -9,14 +9,11 @@ import json
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
-speed_data = queue.Queue()
-current_mode = threading.Event()
-mode_change = threading.Condition()
 
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username):
+    def __init__(self, ip, port, username, accel_data,ready_flag, start_flag, leaderboard_object, end_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -37,11 +34,15 @@ class mqtt_client:
         self.rank_client.on_subscribe =self.on_sub_rank
         # self.username = "siyu"
         # self.password = "password"
+        self.accel_data = accel_data
+        self.ready_flag = ready_flag
+        self.start_flag = start_flag
+        self.end_flag = end_flag
 
         # game details
         self.started = False
         self.bombed = False
-        self.leaderboard = {}
+        self.leaderboard = leaderboard_object
 
     def connect(self):
         try:            
@@ -61,6 +62,7 @@ class mqtt_client:
 
     def start_client(self):
         logging.debug("Client Started")
+        self.start_flag.clear()
         self.bomb_client.loop_start()
         self.accel_client.loop_start()
         self.game_client.loop_start()
@@ -69,22 +71,24 @@ class mqtt_client:
         while True:
             if self.started:
                 # start sending speed data
-                if not speed_data.empty():
-                    sensor_data = speed_data.get()
+                if not self.accel_data.empty():
+                    sensor_data = self.accel_data.get()
                     if self.bombed:
                         sensor_data = int(sensor_data/2)
                     logging.debug("Speed: "+str(sensor_data))
                     self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
-                # else:
-                #     # game end
-                #     self.started = False
-                #     logging.debug(self.playername+" finished")
-                #     self.game_client.publish("info/game", self.playername+":end", qos=1)
+                
+                if self.end_flag.is_set():
+                    # if game ended
+                    self.started = False
+                    logging.debug(self.playername+" finished")
+                    self.game_client.publish("info/game", self.playername+":end", qos=1)
             else:
-                # 10s to get ready
-                time.sleep(10)
-                logging.debug(self.playername+" is ready")
-                self.game_client.publish("info/game", self.playername+":ready", qos=1)
+                # refresh to check if ready every 2s
+                time.sleep(2)
+                if (self.ready_flag.is_set()):
+                    logging.debug(self.playername+" is ready")
+                    self.game_client.publish("info/game", self.playername+":ready", qos=1)
 
     # MQTT callbacks
     # speed 
@@ -134,8 +138,8 @@ class mqtt_client:
         message = str(msg.payload.decode("utf-8"))
         if message == "start":
             logging.debug("game started")
+            self.start_flag.set()
             self.started = True
-            # start local timer?
 
     # leaderboards
     def on_sub_rank(self, client, userdata, mid, granted_qos):
@@ -149,7 +153,6 @@ class mqtt_client:
             logging.debug("Bad connection", )
 
     def on_message_rank(self, client, obj, msg):
-        time.sleep(1)
         data = str(msg.payload.decode("utf-8", "ignore"))
         logging.debug("leaderboard: "+data)
         data = json.loads(data) # decode json data
@@ -159,7 +162,7 @@ class mqtt_client:
     def show_leaderboard(self):
         logging.debug("Printing leaderboard")
         while True:
-            time.sleep(1)
+            pass
             # for name, dist in self.leaderboard.items():
             #     logging.debug(name+": "+str(dist))
 
@@ -184,56 +187,13 @@ def generate_random():
         index += 1
     logging.debug("Exiting Generation")
 
-def receive_val(cmd):
-    logging.debug("Starting FPGA UART")
-    inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
- 
-    process = subprocess.Popen(inputCmd, shell=True,
-                                executable='/bin/bash' , 
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE)
-    index = 0
-    while True:
-        output = process.stdout.readline()
-        # if process.poll() is not None and output == b'':
-        #     break
-        time.sleep(0.5)
-        output = output.decode("utf-8")
-        tmp = output.split()
-        logging.debug(tmp)
-        try:
-            # if (len(tmp[-1]) == 8):
-            out = twos_comp(int(tmp[-1],16), 32)
-            absolute_out = -1 * int(out)
-            speed_data.put(absolute_out)
-            move = absolute_out / 300 * 800
-            # print(move)
-            # movement_data.append(move)
-            # print(tmp[-1])
-            # print(speed_data)
-        except:
-            pass  
-        if (index == 50):
-            # stdout_val = process.communicate(input="o".encode())[0]
-            
-            # logging.debug(stdout_val.decode('utf-8'))
-            break
-        elif (index == 10):
-            stdout_val = process.communicate(input="f".encode())[0]
-            print(stdout_val)
-            # process.stdin.write(b'f\n')
-            # process.stdin.flush()
-            # print(process.stdout.readline())
-            logging.debug("Sending mode")
-        index += 1
-    
-    logging.debug("Closing UART")
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val"""
     if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
         val = val - (1 << bits)        # compute negative value
     return val                         # return positive value as is
+
 
 def main():
     # mqtt = mqtt_client("13.212.218.108", 8883)
