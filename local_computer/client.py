@@ -186,7 +186,7 @@ def game_loop(gameDisplay, clock, carImg, bombImg, itemImg):
 		    except:
 			pass
 
-	if len(bomb_xy)! = 0:
+	if len(bomb_xy) != 0:
 	    for bx, by in bomb_xy
 		bomb(gameDisplay, bombImg, bx, by)
 
