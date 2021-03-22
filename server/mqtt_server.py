@@ -31,6 +31,8 @@ class Game:
         # game data
         # global game started 
         self.started = False
+        self.final_leaderboard = threading.Event()
+        self.final_leaderboard.clear()
         self.players = {}
         self.leaderboard = {}
         self.joining = Queue()
@@ -143,11 +145,9 @@ class Game:
 
                     # send last leaderboard to everyone
                     # reset everyone's status to not ready so we can play again
-                    self.handle_leaderboard(True)
-                    for _, player in self.players.items():
-                        player.dist = 0
-                        player.speed = 0
-                        player.status = 0
+                    # self.handle_leaderboard(True)
+                    self.final_leaderboard.set()
+
             else:
                 if len(self.players) == 0:
                     # cannot start if nobody join yet
@@ -179,12 +179,9 @@ class Game:
                 logging.debug("sent bomb to "+name)
                 self.bomb_server.publish("info/bomb", name)
 
-    def handle_leaderboard(self, last = False):
+    def handle_leaderboard(self):
         while True:
-            if(self.started or last):
-                if last:
-                    logging.debug("final leaderboard")
-                    self.rank_server.publish("info/leaderboard/final", "final", qos=1)
+            if(self.started or self.final_leaderboard.is_set()):
                 for name, player in self.players.items():
                     self.leaderboard[name] = int(player.dist)
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
@@ -193,7 +190,15 @@ class Game:
                     time.sleep(0.5)
                     leaderboard_data = json.dumps(self.leaderboard)
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
-
+                if self.final_leaderboard.is_set():
+                    logging.debug("final leaderboard")
+                    self.rank_server.publish("info/leaderboard/final", "final", qos=1)
+                    self.final_leaderboard.clear()  
+                    for _, player in self.players.items():
+                        player.dist = 0
+                        player.speed = 0
+                        player.status = 0
+                        
     def start_server_handler(self):
         logging.debug("Server Started")
         self.bomb_server.loop_start()

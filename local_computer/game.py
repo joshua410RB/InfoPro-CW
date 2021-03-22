@@ -117,7 +117,7 @@ class Game():
         self.Bg1 = pygame.image.load('img/startscreen.png')
         self.Bg2 = pygame.image.load('img/multiplayer_screen.png')
         self.Bg3 = pygame.image.load('img/ready_screen.png')
-	self.Bg4 = pygame.image.load('img/countdown_screen.png')
+        self.Bg4 = pygame.image.load('img/countdown_screen.png')
 
     def text_objects(self, text, font):
         textSurface = font.render(text, True, self.black)
@@ -214,7 +214,7 @@ class Game():
         # Waiting for Start Screen
         while not self.start_flag.is_set():
             self.screen.fill(self.white)
-	    self.screen.blit(self.Bg3, (0,0))
+            self.screen.blit(self.Bg3, (0,0))
             waiting_text, waiting_rect = self.text_objects("Game is starting soon...", self.text_font)
             waiting_rect.center = ((self.display_width/2),(self.display_height/2-100))
             self.screen.blit(waiting_text, waiting_rect)
@@ -237,7 +237,7 @@ class Game():
         countdown = 5 
         while int(pygame.time.get_ticks() - start_time)//1000 < 6:
             self.screen.fill(self.white)
-	    self.screen.blit(self.Bg4, (0,0))
+            self.screen.blit(self.Bg4, (0,0))
             text = "START!" if (countdown == 0) else str(countdown)
             countdown_text, countdown_rect = self.text_objects(text, self.text_font)
             countdown_rect.center = ((self.display_width/2),(self.display_height/2))
