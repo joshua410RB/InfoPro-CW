@@ -13,7 +13,9 @@ logging.basicConfig(level=logging.DEBUG,
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username, accel_data, ready_flag, start_flag, final_flag, leaderboard_object, ready_object, end_flag):
+    def __init__(self, ip, port, username, password, 
+                 accel_data, ready_flag, start_flag, final_flag, 
+                 leaderboard_object, ready_object, end_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -32,8 +34,8 @@ class mqtt_client:
         self.rank_client.on_connect = self.on_connect_rank
         self.rank_client.on_message = self.on_message_rank
         self.rank_client.on_subscribe =self.on_sub_rank
-        # self.username = "siyu"
-        # self.password = "password"
+        self.username = username
+        self.password = password
         self.accel_data = accel_data
         self.ready_flag = ready_flag
         self.start_flag = start_flag
@@ -59,7 +61,7 @@ class mqtt_client:
             self.game_client.connect(self.brokerip, self.brokerport)
             self.rank_client.connect(self.brokerip, self.brokerport)
         except:
-            logging.debug("Connection Failed")
+            logging.debug("Connection to {} via port {} has failed ".format(self.brokerip, self.brokerport))
             exit(1)
 
     def start_client(self):
