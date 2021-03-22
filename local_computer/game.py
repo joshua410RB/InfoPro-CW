@@ -280,14 +280,16 @@ class Game():
         obstacle_group.add(obstacle)      
 
         # Create Item Sprite
-        item_startx = random.randrange(0, self.display_width)
-        item_starty = -self.display_height
+        self.obstacle_startx = item_startx = random.randrange(0, self.display_width)
+        self.obstacle_starty=item_starty = -self.display_height
         item_group  = pygame.sprite.Group()        
         # if (item_startx >= self.obstacle_startx -100) and (item_startx <= self.obstacle_startx + 100):
         item = Item(item_startx, item_starty)
         item_group.add(item)
 
-        while (self.gameStart):         
+        while (self.gameStart):      
+            # print(self.y_data.qsize())
+            # print(self.x_data.qsize())   
             obstacle_speed = self.y_data.get()
             item_speed = obstacle_speed - 2
 
@@ -399,6 +401,10 @@ class Game():
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
                         self.gameExit = True
                         self.start_queue_flag.clear()
+        self.gameExit = False
+        self.gameStart = False
+        self.end_flag.clear()
+        self.ready_flag.clear()
         self.game_start()
 
 
