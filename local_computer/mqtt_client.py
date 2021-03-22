@@ -95,6 +95,9 @@ class mqtt_client:
                     logging.debug(self.playername+" is ready")
                     self.game_client.publish("info/game", self.playername+":ready", qos=1)
                     send_count+= 1
+                if send_count == 3:
+                    self.ready_flag.clear()
+                    send_count=0
 
     # MQTT callbacks
     # speed 

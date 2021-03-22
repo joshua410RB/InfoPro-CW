@@ -242,7 +242,7 @@ class Game():
             else:
                 status_string = "Ended Game"
 
-            lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font, self.black)
+            lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font, self.white)
             lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
             self.screen.blit(lb_text, lb_rect)
             margin += 40
@@ -288,7 +288,7 @@ class Game():
 
         while (self.gameStart):         
             obstacle_speed = self.y_data.get()
-            item_speed = self.y_data.get() - 2
+            item_speed = obstacle_speed - 2
 
             if int(pygame.time.get_ticks() - start_time)//1000 > 15:
                 break
@@ -312,7 +312,8 @@ class Game():
                 #         obstacle_speed += 3                   
                 #     if event.key == pygame.K_DOWN:
                 #         obstacle_speed -= 3
-            x = self.x_data[-1]
+            # x = self.x_data[-1]
+            x = self.x_data.get()
             # self.x_data.task_done()
             self.screen.fill(self.grey)
             self.obstacle_starty += obstacle_speed

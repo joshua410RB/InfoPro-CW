@@ -198,7 +198,8 @@ class Game:
                         player.dist = 0
                         player.speed = 0
                         player.status = 0
-                        
+                    logging.debug("Game Data Erased")
+
     def start_server_handler(self):
         logging.debug("Server Started")
         self.bomb_server.loop_start()
