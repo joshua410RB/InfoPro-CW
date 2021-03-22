@@ -96,6 +96,9 @@ class Game():
         self.Bg3 = pygame.image.load('img/ready_screen.png')
         self.Bg4 = pygame.image.load('img/countdown_screen.png')
         self.roadBg = pygame.image.load('img/road.png')
+        self.calculatingBg = pygame.image.load('img/calculating.png')
+        self.finalBg = pygame.image.load('img/final_result.png')
+        self.leaderboardBg = pygame.image.load('img/leaderboard.png')
         
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
@@ -277,9 +280,6 @@ class Game():
         print("Go into race screen")
         start_time = pygame.time.get_ticks()
 
-        self.screen.fill(self.white)
-        self.screen.blit(self.roadBg,(0,0))
-
         # Create Player Sprite
         x = (self.display_width * 0.45)
         y = (self.display_height * 0.8)
@@ -302,7 +302,9 @@ class Game():
         item = Item(item_startx, item_starty)
         item_group.add(item)
 
-        while (self.gameStart):      
+        while (self.gameStart): 
+            self.screen.fill(self.white)
+            self.screen.blit(self.roadBg,(0,0))     
             # print(self.y_data.qsize())
             # print(self.x_data.qsize())   
             obstacle_speed = self.y_data.get()
@@ -386,10 +388,12 @@ class Game():
         print("End Screen")
         while not self.gameExit:
             self.screen.fill(self.white)
-            start_text, start_rect = self.text_objects("Awaiting Results", self.text_font, self.black)
-            start_rect.center = ((self.display_width/2),(self.display_height/2-50))
+            self.screen.blit(self.leaderboardBg, (0,0))
+            self.screen.blit(self.calculatingBg, (250, 505)) 
+            #start_text, start_rect = self.text_objects("Final Results", self.text_font, self.black)
+            #start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
-            self.screen.blit(start_text, start_rect)
+            #self.screen.blit(start_text, start_rect)
             self.update_leaderboard(0.5,0.75)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
@@ -403,9 +407,10 @@ class Game():
             self.screen.blit(startbutton_text, startbutton_rect)
 
             if (self.final_flag.is_set()):
-                final_text, final_rect = self.text_objects("Final", self.text_font, self.black)
-                final_rect.center = ((self.display_width/2),60)
-                self.screen.blit(final_text, final_rect)            
+                #final_text, final_rect = self.text_objects("CONGRATULATIONS!", self.text_font, self.black)
+                #final_rect.center = ((self.display_width/2),60)
+                #self.screen.blit(final_text, final_rect)
+                self.screen.blit(self.finalBg, (250, 505))           
             
             pygame.display.update()
 
