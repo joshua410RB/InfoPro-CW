@@ -89,7 +89,7 @@ class Game():
         self.gameExit = False
         self.leaderboard = leaderboard_object
         self.ready = ready_object
-        self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',20)
+        self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',30)
 
         self.obstacle_starty = -self.display_height
         self.obstacle_startx = random.randrange(0, self.display_width)
@@ -216,7 +216,7 @@ class Game():
         while int(pygame.time.get_ticks() - start_time)//1000 < 6:
             self.screen.blit(self.Bg4, (0,0))
             text = "START!" if (countdown == 0) else str(countdown)
-            countdown_text, countdown_rect = self.text_objects(text, self.text_font, self.white)
+            countdown_text, countdown_rect = self.text_objects(text, self.text_font, self.black)
             countdown_rect.center = ((self.display_width/2),(self.display_height/2))
             self.screen.blit(countdown_text, countdown_rect)
             if int(pygame.time.get_ticks() - start_time)//1000 > (5-countdown):
