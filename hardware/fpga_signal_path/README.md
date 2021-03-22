@@ -25,7 +25,7 @@ The module "signal_path_nios_top_mod.v" contains an instance of the signal path 
 </br>
 
 ## Developing Code
-1. Create a NIOS2 project in eclipse from the "Hello_World" template (do not use hello_world_small)
+1. Create a NIOS2 project in eclipse from the "Hello_World_Small" template (do not use Hello_World)
 2. Copy the code from "programs/signal_uart_small.c" and run it
 3. x-axis data is diaplyed on HEX5-4 and y-axis data on HEX1-0. SW1-0 select the x-axis filter coefficient bank and SW3-2 select the y-axis filter coefficient bank
 
