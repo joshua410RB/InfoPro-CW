@@ -29,10 +29,11 @@ class Player(pygame.sprite.Sprite):
     #JEONGIN
     def item_collect(self, item_group):
         item_hit = pygame.sprite.spritecollide(self, item_group, True)
-        print("Item Hit")
-        print(item_hit)
         if len(item_hit)>0:
             self.bombnumber +=1
+            return True
+        else:
+            return False
     
     def get_bombcount(self):
         return self.bombnumber
@@ -340,7 +341,12 @@ class Game():
             if player.collide(obstacle_group):
                 self.crash(obstacle_group, True)
 
-            player.item_collect(item_group)
+            if player.item_collect(item_group):
+                item_starty = 0
+                item_startx = random.randrange(0,self.display_width)
+                item = Item(item_startx, item_starty)
+                item_group.add(item)
+
             if x > self.display_width - self.car_width or x < 0:
                 self.crash(obstacle_group, False)
 
@@ -351,20 +357,6 @@ class Game():
             if item_starty > self.display_height:
                 item_starty = 0
                 item_startx = random.randrange(0,self.display_width)
-        # #bomb
-        # if len(bomb_xy) != 0:
-        #     for i, a_xy in enumerate(bomb_xy):
-        #         a_xy[1] -= 10
-        #         bomb_xy[i][1] = a_xy[1]
-
-        #     if a_xy[1] <= 0:
-        #         try:
-        #             bomb_xy.remove(a_xy)
-        #         except:
-        #             pass
-        # if len(bomb_xy) != 0:
-        #     for a_x, a_y in bomb_xy:
-        #         drawObject(bomb, a_x, a_y)
 
             pygame.display.update()
             self.clock.tick(120)
@@ -406,6 +398,7 @@ class Game():
                 if event.type == pygame.MOUSEBUTTONDOWN: 
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
                         self.gameExit = True
+                        self.start_queue_flag.clear()
         self.game_start()
 
 
