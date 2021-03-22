@@ -7,28 +7,6 @@ except ImportError:
     import Queue as queue
 
 
-# class Bg1(pygame.sprite.Sprite):
-#     def __init__(self, pos_x, pos_y):
-# 	    super().__init__()
-# 	    self.image = pygame.image.load('img/startscreen.png')
-# 	    self.rect = self.image.get_rect()
-# 	    self.rect.center = [pos_x, pos_y]
-
-# class Bg2(pygame.sprite.Sprite):
-#     def __init__(self, pos_x, pos_y):
-#         super().__init__()
-#         self.image = pygame.image.load('img/multiplayer_screen.png')
-#         self.rect = self.image.get_rect()
-#         self.rect.center = [pos_x, pos_y]
-
-# class Bg3(pygame.sprite.Sprite):
-#     def __init__(self, pos_x, pos_y):
-#         super().__init__()
-#         self.image = pygame.image.load('img/ready_screen.png')
-#         self.rect = self.image.get_rect()
-#         self.rect.center = [pos_x, pos_y]
-
-
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
@@ -119,12 +97,12 @@ class Game():
         self.Bg3 = pygame.image.load('img/ready_screen.png')
         self.Bg4 = pygame.image.load('img/countdown_screen.png')
 
-    def text_objects(self, text, font):
-        textSurface = font.render(text, True, self.black)
+    def text_objects(self, text, font, color):
+        textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
 
     def score_display(self, text) :
-        TextSurf, TextRect = self.text_objects("Bombcount: " + text, self.text_font)
+        TextSurf, TextRect = self.text_objects("Bombcount: " + text, self.text_font, self.black)
         TextRect.center = ((self.display_width/2),(self.display_height*1/5))
         self.screen.blit(TextSurf, TextRect)
 
@@ -132,7 +110,7 @@ class Game():
     def crash(self, obstacle_group, create_new):
         self.start_queue_flag.clear()        
         largeText = pygame.font.Font('freesansbold.ttf',40)
-        TextSurf, TextRect = self.text_objects("You have crashed!", largeText)
+        TextSurf, TextRect = self.text_objects("You have crashed!", largeText, self.white)
         TextRect.center = ((self.display_width/2),(self.display_height/2))
         self.screen.blit(TextSurf, TextRect)
 
@@ -156,7 +134,7 @@ class Game():
         while not self.gameStart:            
             self.screen.fill(self.white)
             self.screen.blit(self.Bg1,(0,0))
-            start_text, start_rect = self.text_objects("Racing Game", self.text_font)
+            start_text, start_rect = self.text_objects("Racing Game", self.text_font, self.black)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
@@ -168,7 +146,7 @@ class Game():
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            startbutton_text, startbutton_rect = self.text_objects("Start Game", button_text_font)
+            startbutton_text, startbutton_rect = self.text_objects("Start Game", button_text_font, self.black)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)
             pygame.display.update()
@@ -185,9 +163,8 @@ class Game():
     def multiplayer_screen(self):
         # Ready Button Screen
         while not self.ready_flag.is_set():            
-            self.screen.fill(self.white)
             self.screen.blit(self.Bg2, (0,0))
-            start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font)
+            start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font, self.black)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
             self.screen.blit(start_text, start_rect)
             self.update_readystatus(self.display_width/2, self.display_height/2-100)
@@ -198,7 +175,7 @@ class Game():
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font)
+            startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font, self.black)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)
             pygame.display.update()
@@ -215,7 +192,7 @@ class Game():
         while not self.start_flag.is_set():
             self.screen.fill(self.white)
             self.screen.blit(self.Bg3, (0,0))
-            waiting_text, waiting_rect = self.text_objects("Game is starting soon...", self.text_font)
+            waiting_text, waiting_rect = self.text_objects("Game is starting soon...", self.text_font, self.black)
             waiting_rect.center = ((self.display_width/2),(self.display_height/2-100))
             self.screen.blit(waiting_text, waiting_rect)
             self.update_readystatus(self.display_width/2, self.display_height/2-100)
@@ -236,10 +213,9 @@ class Game():
         
         countdown = 5 
         while int(pygame.time.get_ticks() - start_time)//1000 < 6:
-            self.screen.fill(self.white)
             self.screen.blit(self.Bg4, (0,0))
             text = "START!" if (countdown == 0) else str(countdown)
-            countdown_text, countdown_rect = self.text_objects(text, self.text_font)
+            countdown_text, countdown_rect = self.text_objects(text, self.text_font, self.white)
             countdown_rect.center = ((self.display_width/2),(self.display_height/2))
             self.screen.blit(countdown_text, countdown_rect)
             if int(pygame.time.get_ticks() - start_time)//1000 > (5-countdown):
@@ -253,7 +229,7 @@ class Game():
         self.race_screen()
 
     def update_readystatus(self, width_margin, height_margin):
-        lb_title, lb_rect = self.text_objects("In Lobby", self.text_font)
+        lb_title, lb_rect = self.text_objects("In Lobby", self.text_font, self.white)
         lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin))
         self.screen.blit(lb_title, lb_rect)
         margin = 40 
@@ -266,19 +242,19 @@ class Game():
             else:
                 status_string = "Ended Game"
 
-            lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font)
+            lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font, self.black)
             lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
             self.screen.blit(lb_text, lb_rect)
             margin += 40
 
     def update_leaderboard(self, width_pos, height_pos):
-        lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font)
+        lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font, self.black)
         lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos))
         self.screen.blit(lb_title, lb_rect)
         position = 1
         margin = 40 
         for name, dist in self.leaderboard.items():
-            lb_text, lb_rect = self.text_objects(str(position) + ". "+ str(name)+": "+str(dist)+"m", self.text_font)
+            lb_text, lb_rect = self.text_objects(str(position) + ". "+ str(name)+": "+str(dist)+"m", self.text_font, self.black)
             lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos+margin))
             self.screen.blit(lb_text, lb_rect)
             margin += 40
@@ -317,9 +293,9 @@ class Game():
             if int(pygame.time.get_ticks() - start_time)//1000 > 15:
                 break
                 
-            currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font)
+            currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font, self.black)
             currspeed_rect.center = ((self.display_width*1/4),(self.display_height*1/5 ))
-            time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", self.text_font)
+            time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", self.text_font, self.black)
             time_rect.center = ((self.display_width*1/4),(self.display_height*1/5 + 40))
 
             for event in pygame.event.get():
@@ -399,7 +375,7 @@ class Game():
         print("End Screen")
         while not self.gameExit:
             self.screen.fill(self.white)
-            start_text, start_rect = self.text_objects("Awaiting Results", self.text_font)
+            start_text, start_rect = self.text_objects("Awaiting Results", self.text_font, self.black)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
@@ -411,12 +387,12 @@ class Game():
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            startbutton_text, startbutton_rect = self.text_objects("Exit", button_text_font)
+            startbutton_text, startbutton_rect = self.text_objects("Exit", button_text_font, self.black)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
             self.screen.blit(startbutton_text, startbutton_rect)
 
             if (self.final_flag.is_set()):
-                final_text, final_rect = self.text_objects("Final", self.text_font)
+                final_text, final_rect = self.text_objects("Final", self.text_font, self.black)
                 final_rect.center = ((self.display_width/2),60)
                 self.screen.blit(final_text, final_rect)            
             
@@ -429,7 +405,7 @@ class Game():
                 if event.type == pygame.MOUSEBUTTONDOWN: 
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
                         self.gameExit = True
-        self.start_screen()
+        self.game_start()
 
 
 if __name__ == "__main__":
