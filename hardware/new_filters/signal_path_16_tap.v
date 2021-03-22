@@ -55,9 +55,9 @@ module signal_path_16_tap(
     logic[15:0] y;
     logic[15:0] z;
 
-    logic[15:0] xc[3:0][16:0];  // x coefficients (4 banks of 16 values each)
-    logic[15:0] yc[3:0][16:0];  // y coefficients
-    logic[15:0] zc[3:0][16:0];  // z coefficients
+    logic[16:0] xc[3:0][15:0];  // x coefficients (4 banks of 16 values each)
+    logic[16:0] yc[3:0][15:0];  // y coefficients
+    logic[16:0] zc[3:0][15:0];  // z coefficients
 
     initial begin   // initialise x coefficients
         xc[0][0] = 16'hffff;   // set 0
