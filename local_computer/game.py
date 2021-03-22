@@ -26,7 +26,6 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    #JEONGIN
     def item_collect(self, item_group):
         item_hit = pygame.sprite.spritecollide(self, item_group, True)
         if len(item_hit)>0:
@@ -147,10 +146,19 @@ class Game():
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
+            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+60 <= mouse[1] <= self.display_height/2+80:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+60, 100, 40])
+            else:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+60, 100, 40])
+
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            startbutton_text, startbutton_rect = self.text_objects("Start Game", button_text_font, self.black)
-            startbutton_rect.center = ((self.display_width/2),(self.display_height/2+40))
-            self.screen.blit(startbutton_text, startbutton_rect)
+            mult_button_text, mult_button_rect = self.text_objects("Multiplayer", button_text_font, self.black)
+            mult_button_rect.center = ((self.display_width/2),(self.display_height/2+40))
+            self.screen.blit(mult_button_text, mult_button_rect)
+            
+            single_button_text, single_button_rect = self.text_objects("Single Player", button_text_font, self.black)
+            single_button_rect.center = ((self.display_width/2),(self.display_height/2+100))
+            self.screen.blit(single_button_text, single_button_rect)
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -160,6 +168,9 @@ class Game():
                 if event.type == pygame.MOUSEBUTTONDOWN: 
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
                         self.gameStart =True 
+                    # if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+60 <= mouse[1] <= self.display_height/2+100: 
+                    #     self.gameStart =True 
+                    #     self.race_screen("single ")
         self.multiplayer_screen()
 
     def multiplayer_screen(self):
@@ -228,7 +239,7 @@ class Game():
                     pygame.quit()
                     quit() 
         self.start_queue_flag.set()
-        self.race_screen()
+        self.race_screen("mult")
 
     def update_readystatus(self, width_margin, height_margin):
         lb_title, lb_rect = self.text_objects("In Lobby", self.text_font, self.white)
@@ -262,7 +273,7 @@ class Game():
             margin += 40
             position += 1
 
-    def race_screen(self):
+    def race_screen(self, mode):
         print("Go into race screen")
         start_time = pygame.time.get_ticks()
 
@@ -294,7 +305,8 @@ class Game():
             obstacle_speed = self.y_data.get()
             item_speed = obstacle_speed - 2
 
-            if int(pygame.time.get_ticks() - start_time)//1000 > 15:
+            
+            if ((mode == "mult") and int(pygame.time.get_ticks() - start_time)//1000 > 15):
                 break
                 
             currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font_small, self.black)
