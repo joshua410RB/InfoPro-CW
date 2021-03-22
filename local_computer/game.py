@@ -90,6 +90,7 @@ class Game():
         self.leaderboard = leaderboard_object
         self.ready = ready_object
         self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',30)
+        self.text_font_small = pygame.font.Font('assets/Roboto-Regular.ttf',15)
 
         self.obstacle_starty = -self.display_height
         self.obstacle_startx = random.randrange(0, self.display_width)
@@ -103,7 +104,7 @@ class Game():
         return textSurface, textSurface.get_rect()
 
     def score_display(self, text) :
-        TextSurf, TextRect = self.text_objects("Bombcount: " + text, self.text_font, self.black)
+        TextSurf, TextRect = self.text_objects("Bombcount: " + text, self.text_font_small, self.black)
         TextRect.center = ((self.display_width/2),(self.display_height*1/5))
         self.screen.blit(TextSurf, TextRect)
 
@@ -249,13 +250,13 @@ class Game():
             margin += 40
 
     def update_leaderboard(self, width_pos, height_pos):
-        lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font, self.black)
+        lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font_small, self.black)
         lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos))
         self.screen.blit(lb_title, lb_rect)
         position = 1
         margin = 40 
         for name, dist in self.leaderboard.items():
-            lb_text, lb_rect = self.text_objects(str(position) + ". "+ str(name)+": "+str(dist)+"m", self.text_font, self.black)
+            lb_text, lb_rect = self.text_objects(str(position) + ". "+ str(name)+": "+str(dist)+"m", self.text_font_small, self.black)
             lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos+margin))
             self.screen.blit(lb_text, lb_rect)
             margin += 40
@@ -296,9 +297,9 @@ class Game():
             if int(pygame.time.get_ticks() - start_time)//1000 > 15:
                 break
                 
-            currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font, self.black)
+            currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font_small, self.black)
             currspeed_rect.center = ((self.display_width*1/4),(self.display_height*1/5 ))
-            time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", self.text_font, self.black)
+            time_text, time_rect = self.text_objects("Time Elapsed: "+str(int(pygame.time.get_ticks() - start_time)//1000)+"s", self.text_font_small, self.black)
             time_rect.center = ((self.display_width*1/4),(self.display_height*1/5 + 40))
 
             for event in pygame.event.get():
