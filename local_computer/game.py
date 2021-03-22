@@ -206,8 +206,6 @@ class Game():
         while int(pygame.time.get_ticks() - start_time)//1000 < 6:
             self.screen.fill(self.white)
             text = "START!" if (countdown == 0) else str(countdown)
-            if (countdown == 0):
-                self.start_queue_flag.set()
             countdown_text, countdown_rect = self.text_objects(text, self.text_font)
             countdown_rect.center = ((self.display_width/2),(self.display_height/2))
             self.screen.blit(countdown_text, countdown_rect)
@@ -218,6 +216,7 @@ class Game():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit() 
+        self.start_queue_flag.set()
         self.race_screen()
 
     def update_readystatus(self, width_margin, height_margin):
@@ -304,8 +303,8 @@ class Game():
                 #         obstacle_speed += 3                   
                 #     if event.key == pygame.K_DOWN:
                 #         obstacle_speed -= 3
-            x = self.x_data.get()
-            self.x_data.task_done()
+            x = self.x_data[-1]
+            # self.x_data.task_done()
             self.screen.fill(self.grey)
             self.obstacle_starty += obstacle_speed
             item_starty += item_speed
@@ -330,6 +329,8 @@ class Game():
             # Check for crashes
             if player.collide(obstacle_group):
                 self.crash(obstacle_group, True)
+                
+            player.item_collect(item_group)
             if x > self.display_width - self.car_width or x < 0:
                 self.crash(obstacle_group, False)
 
@@ -337,9 +338,9 @@ class Game():
                 self.obstacle_starty = 0 - obstacle_height
                 self.obstacle_startx = random.randrange(0,self.display_width)
 
-            # if item_starty > self.display_height:
-            #     item_starty = 0
-            #     item_startx = random.randrange(0,self.display_width)
+            if item_starty > self.display_height:
+                item_starty = 0
+                item_startx = random.randrange(0,self.display_width)
         # #bomb
         # if len(bomb_xy) != 0:
         #     for i, a_xy in enumerate(bomb_xy):

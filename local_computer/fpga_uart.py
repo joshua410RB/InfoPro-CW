@@ -47,7 +47,7 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
                 try:
                     if start_queue_flag.is_set() and not end_flag.is_set():
                         logging.debug("Putting values in queue from fpga")
-                        x_data.put((-converted_x+250)/600*900)
+                        x_data.append((-converted_x+250)/600*900)
                         y_mqtt_data.put((-converted_y+250)//30)
                         y_game_data.put((-converted_y+250)//30)
                 except:

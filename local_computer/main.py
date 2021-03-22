@@ -31,7 +31,8 @@ if __name__ == "__main__":
     print(args.username)
     print(args.password)
     # Start Thread for FPGA UART Connection
-    x_data = queue.Queue()
+    # x_data = queue.Queue()
+    x_data = []
     y_game_data = queue.Queue()
     y_mqtt_data = queue.Queue()
     #Ready Event => From game to mqtt
