@@ -2,7 +2,10 @@ from fpga_uart import uart_handler
 from mqtt_client import mqtt_client
 from game import Game 
 import threading
-import queue
+try: 
+    import queue
+except ImportError:
+    import Queue as queue
 import argparse
 
 # global variable for accelerometer data
