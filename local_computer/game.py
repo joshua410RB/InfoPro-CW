@@ -7,26 +7,26 @@ except ImportError:
     import Queue as queue
 
 
-class Bg1(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-	super().__init__()
-	self.image = pygame.image.load('img/startscreen.png')
-	self.rect = self.image.get_rect()
-	self.rect.center = [pos_x, pos_y]
+# class Bg1(pygame.sprite.Sprite):
+#     def __init__(self, pos_x, pos_y):
+# 	    super().__init__()
+# 	    self.image = pygame.image.load('img/startscreen.png')
+# 	    self.rect = self.image.get_rect()
+# 	    self.rect.center = [pos_x, pos_y]
 
-class Bg2(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__()
-        self.image = pygame.image.load('img/multiplayer_screen.png')
-        self.rect = self.image.get_rect()
-	self.rect.center = [pos_x, pos_y]
+# class Bg2(pygame.sprite.Sprite):
+#     def __init__(self, pos_x, pos_y):
+#         super().__init__()
+#         self.image = pygame.image.load('img/multiplayer_screen.png')
+#         self.rect = self.image.get_rect()
+#         self.rect.center = [pos_x, pos_y]
 
-class Bg3(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__()
-        self.image = pygame.image.load('img/ready_screen.png')
-        self.rect = self.image.get_rect()
-	self.rect.center = [pos_x, pos_y]
+# class Bg3(pygame.sprite.Sprite):
+#     def __init__(self, pos_x, pos_y):
+#         super().__init__()
+#         self.image = pygame.image.load('img/ready_screen.png')
+#         self.rect = self.image.get_rect()
+#         self.rect.center = [pos_x, pos_y]
 
 
 class Player(pygame.sprite.Sprite):
@@ -114,6 +114,9 @@ class Game():
 
         self.obstacle_starty = -self.display_height
         self.obstacle_startx = random.randrange(0, self.display_width)
+        self.Bg1 = pygame.image.load('img/startscreen.png')
+        self.Bg2 = pygame.image.load('img/multiplayer_screen.png')
+        self.Bg3 = pygame.image.load('img/ready_screen.png')
 
     def text_objects(self, text, font):
         textSurface = font.render(text, True, self.black)
@@ -151,7 +154,7 @@ class Game():
         self.end_flag.clear()
         while not self.gameStart:            
             self.screen.fill(self.white)
-	    self.screen.blit(self.Bg1.image, (self.display_width/2), (self.display_height/2))
+            self.screen.blit(self.Bg1,(0,0))
             start_text, start_rect = self.text_objects("Racing Game", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -182,10 +185,9 @@ class Game():
         # Ready Button Screen
         while not self.ready_flag.is_set():            
             self.screen.fill(self.white)
-	    self.screen.blit(self.Bg2.image, (self.display_width/2), (self.display_height/2))
+            self.screen.blit(self.Bg2, (0,0))
             start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
-    
             self.screen.blit(start_text, start_rect)
             self.update_readystatus(self.display_width/2, self.display_height/2-100)
             mouse = pygame.mouse.get_pos() 
@@ -357,7 +359,7 @@ class Game():
             # Check for crashes
             if player.collide(obstacle_group):
                 self.crash(obstacle_group, True)
-                
+
             player.item_collect(item_group)
             if x > self.display_width - self.car_width or x < 0:
                 self.crash(obstacle_group, False)

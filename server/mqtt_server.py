@@ -288,7 +288,7 @@ class Player:
         self.dist += 1/2*(self.speed + self.prev_speed)*0.1 # timestep
 
 def main():
-    game = Game("localhost", 1883)
+    game = Game("0.0.0.0", 1883)
     game.connect()
     game.threadstart()
 
