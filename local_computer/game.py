@@ -1,7 +1,33 @@
 import pygame
 import time
 import random
-import queue
+try: 
+    import queue
+except ImportError:
+    import Queue as queue
+
+
+class Bg1(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+	super().__init__()
+	self.image = pygame.image.load('img/startscreen.png')
+	self.rect = self.image.get_rect()
+	self.rect.center = [pos_x, pos_y]
+
+class Bg2(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = pygame.image.load('img/multiplayer_screen.png')
+        self.rect = self.image.get_rect()
+	self.rect.center = [pos_x, pos_y]
+
+class Bg3(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = pygame.image.load('img/ready_screen.png')
+        self.rect = self.image.get_rect()
+	self.rect.center = [pos_x, pos_y]
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
@@ -125,6 +151,7 @@ class Game():
         self.end_flag.clear()
         while not self.gameStart:            
             self.screen.fill(self.white)
+	    self.screen.blit(self.Bg1.image, (self.display_width/2), (self.display_height/2))
             start_text, start_rect = self.text_objects("Racing Game", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -132,7 +159,7 @@ class Game():
 
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
-                pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+20, 100, 40])
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
@@ -155,6 +182,7 @@ class Game():
         # Ready Button Screen
         while not self.ready_flag.is_set():            
             self.screen.fill(self.white)
+	    self.screen.blit(self.Bg2.image, (self.display_width/2), (self.display_height/2))
             start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font)
             start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
@@ -162,7 +190,7 @@ class Game():
             self.update_readystatus(self.display_width/2, self.display_height/2-100)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
-                pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+20, 100, 40])
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
 
