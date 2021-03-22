@@ -1,10 +1,7 @@
 import pygame
 import time
 import random
-try: 
-    import queue
-except ImportError:
-    import Queue as queue
+import queue
 
 
 class Player(pygame.sprite.Sprite):
@@ -55,6 +52,7 @@ class Item(pygame.sprite.Sprite):
     def update(self, pos_x, pos_y):
         self.rect.center = [pos_x, pos_y]
 
+
 class Game():
     def __init__(self, x_data, y_data, 
                  ready_flag, start_flag, start_queue_flag, final_flag, 
@@ -76,7 +74,7 @@ class Game():
         pygame.display.set_icon(self.icon)
         self.clock = pygame.time.Clock()
         # Set game objects
-        self.bombImg = pygame.image.load('img/bomb.png')
+        self.bombImg = pygame.image.load('img/item.png')
         self.x_data = x_data
         self.y_data = y_data
         self.ready_flag = ready_flag
@@ -97,10 +95,12 @@ class Game():
         self.Bg2 = pygame.image.load('img/multiplayer_screen.png')
         self.Bg3 = pygame.image.load('img/ready_screen.png')
         self.Bg4 = pygame.image.load('img/countdown_screen.png')
-
+        self.roadBg = pygame.image.load('img/road.png')
+        
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
+
 
     def score_display(self, text) :
         TextSurf, TextRect = self.text_objects("Bombcount: " + text, self.text_font_small, self.black)
@@ -276,6 +276,9 @@ class Game():
     def race_screen(self, mode):
         print("Go into race screen")
         start_time = pygame.time.get_ticks()
+
+        self.screen.fill(self.white)
+        self.screen.blit(self.roadBg,(0,0))
 
         # Create Player Sprite
         x = (self.display_width * 0.45)
