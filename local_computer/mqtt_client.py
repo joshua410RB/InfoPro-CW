@@ -5,6 +5,7 @@ import logging
 from random import randint
 import subprocess
 import json
+import ssl
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -55,14 +56,14 @@ class mqtt_client:
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
-            # self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            # self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            # self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            # self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            # self.accel_client.tls_insecure_set(True)
-            # self.bomb_client.tls_insecure_set(True)
-            # self.game_client.tls_insecure_set(True)
-            # self.rank_client.tls_insecure_set(True)
+            self.accel_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.game_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.bomb_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.rank_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.accel_client.tls_insecure_set(True)
+            self.bomb_client.tls_insecure_set(True)
+            self.game_client.tls_insecure_set(True)
+            self.rank_client.tls_insecure_set(True)
 
             # set last will message to be sent un ungraceful disconnection
             lwm = self.playername+":died"
@@ -91,7 +92,7 @@ class mqtt_client:
                 # start sending speed data
                 if not self.accel_data.empty():
                     sensor_data = self.accel_data.get()
-                    logging.debug("Speed: "+str(sensor_data))
+                    # logging.debug("Speed: "+str(sensor_data))
                     self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
                 
                 if self.end_flag.is_set():
@@ -99,6 +100,12 @@ class mqtt_client:
                     self.started = False
                     logging.debug(self.playername+" finished")
                     self.game_client.publish("info/game", self.playername+":end", qos=1)
+
+                if self.send_bomb_flag.is_set():
+                    # send bomb
+                    logging.debug("throw bomb")
+                    self.send_bomb_flag.clear()
+                    self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
             else:
                 # refresh to check if ready every 2s
                 if (self.ready_flag.is_set() and send_count<3):
@@ -185,7 +192,7 @@ class mqtt_client:
             self.final_flag.set()
         else:
             data = str(msg.payload.decode("utf-8", "ignore"))
-            logging.debug("client leaderboard: "+data)
+            # logging.debug("client leaderboard: "+data)
             data = json.loads(data) # decode json data
             # sort by position
             sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
@@ -202,10 +209,10 @@ class mqtt_client:
 
     def handle_bomb(self):
         while True:
-            time.sleep(0.3)
             if self.send_bomb_flag.is_set():
                 # send bomb
                 logging.debug("throw bomb")
+                time.sleep(5)
                 self.send_bomb_flag.clear()
                 self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
 

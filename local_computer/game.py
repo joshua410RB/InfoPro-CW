@@ -2,7 +2,11 @@ import pygame
 import time
 import random
 import queue
+import logging
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
+                    )
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
@@ -29,9 +33,6 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
     
-    def get_bombcount(self):
-        return self.bombnumber
-
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
@@ -127,6 +128,7 @@ class Game():
         pygame.display.update()
         time.sleep(2)
         self.start_queue_flag.set()
+        time.sleep(0.5)
 
     def game_start(self):
         self.start_screen()
@@ -153,7 +155,7 @@ class Game():
             if self.display_width/2-120 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
                 pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             mult_button_text, mult_button_rect = self.text_objects("Multiplayer", button_text_font, self.black)
@@ -204,7 +206,7 @@ class Game():
                 if event.type == pygame.MOUSEBUTTONDOWN: 
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2: 
                         self.ready_flag.set()
-                        print("Ready")
+                        logging.debug("Ready")
 
         # Waiting for Start Screen
         while not self.start_flag.is_set():
@@ -279,7 +281,7 @@ class Game():
             position += 1
 
     def race_screen(self, mode):
-        print("Go into race screen")
+        logging.debug("Go into race screen")
         start_time = pygame.time.get_ticks()
         start_slow_time = 0
         slowed = False
@@ -302,20 +304,19 @@ class Game():
         self.obstacle_startx = item_startx = random.randrange(0, self.display_width)
         self.obstacle_starty=item_starty = -self.display_height
         item_group  = pygame.sprite.Group()        
-        # if (item_startx >= self.obstacle_startx -100) and (item_startx <= self.obstacle_startx + 100):
         item = Item(item_startx, item_starty)
         item_group.add(item)
 
         while (self.gameStart):
             self.screen.blit(self.roadBg,(0,0))     
-            # print(self.y_data.qsize())
-            # print(self.x_data.qsize())   
+            # logging.debug(self.y_data.qsize())
+            # logging.debug(self.x_data.qsize())   
             obstacle_speed = self.y_data.get()
+            logging.debug("Current x_data size: "+str(self.x_data.qsize())+". Current y_data size: "+str(self.y_data.qsize()))
             item_speed = obstacle_speed - 2
 
-            print("Playing Screen2") 
             
-            if ((mode == "mult") and int(pygame.time.get_ticks() - start_time)//1000 > 15):
+            if ((mode == "mult") and int(pygame.time.get_ticks() - start_time)//1000 > 30):
                 break
                 
             currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font_small, self.white)
@@ -328,9 +329,9 @@ class Game():
                     pygame.quit()
                     quit()
 
-            x = self.x_data[-1]
-            # x = self.x_data.get()
-            # self.x_data.task_done()
+            # x = self.x_data[-1]
+            x = self.x_data.get()
+            self.x_data.task_done()
             self.obstacle_starty += obstacle_speed
             item_starty += item_speed
 
@@ -345,17 +346,20 @@ class Game():
             item_group.update(item_startx, item_starty)
 
             #show score
-            self.score_display(str(player.bombnumber))
+            self.score_display(str(self.bombnumber))
             self.update_leaderboard(0.75, 0.2)
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
 
-            # Bomb Logic 
+            # Bomb Logic
             if self.bp_flag.is_set():
+                logging.debug("Button is Pressed!")
                 if self.bombnumber > 0:
+                    logging.debug("Bomb Sent from game!")
                     self.bombnumber -= 1
                     self.bp_flag.clear()
                     self.send_bomb_flag.set()
+                    logging.debug("Sent bomb")
 
             if self.bombed_flag.is_set():
                 start_slow_time = pygame.time.get_ticks()
@@ -402,7 +406,7 @@ class Game():
         self.end_screen()
      
     def end_screen(self):
-        print("End Screen")
+        logging.debug("End Screen")
         while not self.gameExit:
             self.screen.blit(self.leaderboardBg, (0,0))
             self.screen.blit(self.calculatingBg, (250, 505)) 
