@@ -25,14 +25,12 @@ int ybank;
 int zbank;
 
 int button_datain;
-int bomb_count = 0;
 int bomb_thrown = 0;
 
 enum state {
 	normal = 0,
 	slow = 1,
 	stop = 2,
-	extra = 3
 };
 alt_u8 mode = normal;
 
@@ -184,80 +182,25 @@ int main()
 		    	break;
 		    case 'x':
 		    	mode = stop;
-		      	break;
-		    case 'e':
-		    	mode = extra;
-		    	break;
-		    case 'b':
-		    	bomb_count++;
-		    	switch (bomb_count){
-		    	case 1:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '1');}
-		    		break;
-		    	case 2:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '2');}
-		    		break;
-		    	case 3:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '3');}
-		    		break;
-		    	case 4:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '4');}
-		    		break;
-		    	case 5:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '5');}
-		    		break;
-		    	case 6:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '6');}
-		    		break;
-		    	case 7:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '7');}
-		    		break;
-		    	case 8:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '8');}
-		    		break;
-		    	case 9:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '9');}
-		    		break;
-		        }
 		        break;
 		  }
 	  }
 	  //================================================================================================
 
 	  //============ printing to 7-seg display: mode, picking up bombs and throwing bombs ==============
-	  if (bomb_count == 0){
-		  if (mode == stop){
+	  	  if (button_datain == 0){
+	  		  for (int i=0; i<60000; i++) {print_letters('T', 'H', 'R', 'O', 'V', 'V');}
+	  		  bomb_thrown = 1;
+	  	  } else if (mode == stop){
 			  print_letters('S', 'T', 'O', 'P', '!', '!');
 			  bomb_thrown = 0;
 		  } else if (mode == slow){
 			  print_letters('S', 'L', 'O', 'U', 'U', '!');
 			  bomb_thrown = 0;
-		  } else if (mode == extra){
-			  print_letters('E', 'X', 'T', 'R', 'A', '!');
-			  bomb_thrown = 0;
 		  } else {
 			  print_letters('N', 'O', 'R', 'M', 'A', 'L' );
 			  bomb_thrown = 0;
 		  }
-	  } else {
-		  if (button_datain == 0){
-			  for (int i=0; i<60000; i++) {print_letters('T', 'H', 'R', 'O', 'V', 'V');}
-			  bomb_count--;
-			  bomb_thrown = 1;
-		  } else if (button_datain == 1 && mode == stop){
-			  print_letters('S', 'T', 'O', 'P', '!', '!');
-			  bomb_thrown = 0;
-		  } else if (button_datain == 1 && mode == slow){
-			  print_letters('S', 'L', 'O', 'U', 'U', '!');
-			  bomb_thrown = 0;
-		  } else if (button_datain == 1 && mode == extra){
-			  print_letters('E', 'X', 'T', 'R', 'A', '!');
-			  bomb_thrown = 0;
-		  } else {
-			  print_letters('N', 'O', 'R', 'M', 'A', 'L' );
-			  bomb_thrown = 0;
-		  }
-	  }
 	  //================================================================================================
 
 	  //================== setting filter coefficients based on the mode player is in ==================
