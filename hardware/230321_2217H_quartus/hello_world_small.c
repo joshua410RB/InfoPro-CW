@@ -27,6 +27,8 @@ int zbank;
 int button_datain;
 int bomb_thrown = 0;
 
+int counter1=0;
+
 enum state {
 	normal = 0,
 	slow = 1,
@@ -158,6 +160,7 @@ int main()
   IRQInit(readValues);												// start interrupt handler for accelerometer values
   IOWR_ALTERA_AVALON_PIO_IRQ_MASK(ACCEL_DATA_INTERRUPT_BASE, 0xFF);
   update_flag=0;
+  counter1=0;
   jtag_uart_init(sys_jtag_isr);
   //================================================================================
 
@@ -166,7 +169,7 @@ int main()
 	  sw = IORD(SWITCH_BASE,0);
 
 	  if(update_flag==1)	{	// print accelerometer data
-		  printf("<->%d|%d|%d|%d<|> \n", x_data, y_data, z_data, bomb_thrown);
+		  alt_printf("<->%x|%x|%x|%x<|> \n", x_data, y_data, z_data, bomb_thrown);
 		  update_flag=0;
 	  }
 
@@ -187,20 +190,36 @@ int main()
 	  }
 	  //================================================================================================
 
-	  //============ printing to 7-seg display: mode, picking up bombs and throwing bombs ==============
-	  	  if (button_datain == 0){
-	  		  for (int i=0; i<60000; i++) {print_letters('T', 'H', 'R', 'O', 'V', 'V');}
-	  		  bomb_thrown = 1;
-	  	  } else if (mode == stop){
-			  print_letters('S', 'T', 'O', 'P', '!', '!');
-			  bomb_thrown = 0;
-		  } else if (mode == slow){
-			  print_letters('S', 'L', 'O', 'U', 'U', '!');
-			  bomb_thrown = 0;
-		  } else {
-			  print_letters('N', 'O', 'R', 'M', 'A', 'L' );
-			  bomb_thrown = 0;
-		  }
+	  //============ printing to 7-seg display: mode,  and throwing bombs ==============================
+		if(button_datain == 0 && counter1==0)	{
+			counter1=1;
+		}
+		if(counter1>0)	{
+			print_letters('T', 'H', 'R', 'O', 'V', 'V');
+			bomb_thrown = 1;
+		}
+		else	{
+			if (mode == stop){
+				print_letters('S', 'T', 'O', 'P', '!', '!');
+				bomb_thrown = 0;
+		  	} 
+		  	else if (mode == slow){
+				print_letters('S', 'L', 'O', 'U', 'U', '!');
+				bomb_thrown = 0;
+		  	} 
+			else {
+				print_letters('N', 'O', 'R', 'M', 'A', 'L' );
+				bomb_thrown = 0;
+		  	}
+		}
+		if(counter1>0)	{
+			if(counter1 > 60000)	{
+				counter1=0;
+			}
+			else	{
+				counter1++;
+			}
+		}
 	  //================================================================================================
 
 	  //================== setting filter coefficients based on the mode player is in ==================
