@@ -246,7 +246,7 @@ class Game():
 
     def update_readystatus(self, width_margin, height_margin):
         lb_title, lb_rect = self.text_objects("In Lobby", self.text_font, self.white)
-        lb_rect.center = ((self.display_width-width_margin),(self.display_height-(2*height_margin)))
+        lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin))
         self.screen.blit(lb_title, lb_rect)
         margin = 40 
         for name, status in self.ready.items():
@@ -259,7 +259,7 @@ class Game():
                 status_string = "Ended Game"
 
             lb_text, lb_rect = self.text_objects(str(name)+": "+status_string, self.text_font, self.white)
-            lb_rect.center = ((self.display_width-width_margin),(self.display_height-(2*height_margin)+margin))
+            lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin+margin))
             self.screen.blit(lb_text, lb_rect)
             margin += 40
 
