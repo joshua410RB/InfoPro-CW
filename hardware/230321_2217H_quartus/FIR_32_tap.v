@@ -66,16 +66,17 @@ module FIR_32_tap(
     logic[15:0] pipe_7_8;
     logic[15:0] sinkhole;
 
-    logic[15:0] f1;
-    logic[15:0] f2;
-    logic[15:0] f3;
-    logic[15:0] f4;
-    logic[15:0] f5;
-    logic[15:0] f6;
-    logic[15:0] f7;
-    logic[15:0] f8;
-    logic[15:0] sum1;
-    logic[15:0] sum2;
+    logic[31:0] f1;
+    logic[31:0] f2;
+    logic[31:0] f3;
+    logic[31:0] f4;
+    logic[31:0] f5;
+    logic[31:0] f6;
+    logic[31:0] f7;
+    logic[31:0] f8;
+    logic[31:0] sum1;
+    logic[31:0] sum2;
+    logic[31:0] final_sum;
 
     wire[15:0] data_in;
     assign data_in = sample_in;
@@ -93,6 +94,7 @@ module FIR_32_tap(
         busy = run | status;
         // sum1 = f1 + f2 + f3 + f4;
         // sum2 = f5 + f6 + f7 + f8;
+        final_sum = sum1 + sum2;
     end
 
     always_ff @(posedge clk) begin
@@ -114,7 +116,7 @@ module FIR_32_tap(
         end
         else if(state==SUM2) begin
             state <= IDLE;
-            filter_data <= sum1 + sum2;
+            filter_data <= final_sum[31:16];
             status <= 0;
         end
     end
