@@ -43,6 +43,7 @@ void readValues()	{					// ISR to store new values into variables
 	z_data = IORD(ACCEL_ZREAD_BASE,0);
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(ACCEL_DATA_INTERRUPT_BASE, 0);	// clear interrupt edge capture register
 	update_flag=1;
+	// button_datain = IORD_ALTERA_AVALON_PIO_DATA(KEY1_BUTTON_BASE);
 }
 
 void IRQInit(void *isr)	{
@@ -170,6 +171,11 @@ int main()
 
 	  if(update_flag==1)	{	// print accelerometer data
 		  alt_printf("<->%x|%x|%x|%x<|> \n", x_data, y_data, z_data, bomb_thrown);
+		  if(bomb_thrown>0)	{
+			//   alt_printf("BOMB\n");
+			  bomb_thrown=0;
+		  }
+		//   bomb_thrown=0;
 		  update_flag=0;
 	  }
 
@@ -193,19 +199,16 @@ int main()
 	  //============ printing to 7-seg display: mode,  and throwing bombs ==============================
 		if(button_datain == 0 && counter1==0)	{
 			print_letters('T', 'H', 'R', 'O', 'V', 'V');
-			// bomb_thrown = 1;
 			counter1=1;
 		}
+		IOWR(LED_BASE, 0, bomb_thrown);
 		if(counter1>0)	{
 			if(counter1 > 60000)	{
 				counter1=0;
 			}
 			else	{
-				if(counter1>2 && counter1<10)	{
+				if(counter1==5)	{
 					bomb_thrown = 1;
-				}
-				else	{
-					bomb_thrown = 0;
 				}
 				counter1++;
 			}
@@ -214,19 +217,16 @@ int main()
 			if (mode == stop){
 				print_letters('S', 'T', 'O', 'P', '!', '!');
 				bomb_thrown = 0;
-		  	} 
+		  	}
 		  	else if (mode == slow){
 				print_letters('S', 'L', 'O', 'U', 'U', '!');
 				bomb_thrown = 0;
-		  	} 
+		  	}
 			else {
 				print_letters('N', 'O', 'R', 'M', 'A', 'L' );
 				bomb_thrown = 0;
 		  	}
 		}
-		// if(counter1>0)	{
-			
-		// }
 	  //================================================================================================
 
 	  //================== setting filter coefficients based on the mode player is in ==================
