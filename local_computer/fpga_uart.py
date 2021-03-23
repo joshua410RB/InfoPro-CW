@@ -39,7 +39,8 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
         tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
         tmp = tmp[1].split("|")
         # logging.debug(tmp)
-
+        if sent_slow == True:
+            time.sleep(0.1)
         # Receive Data
         if len(tmp) > 2:
             current_x = tmp[0]
@@ -54,32 +55,34 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
             converted_x = twos_comp(int(current_x, 16),16)
             converted_y = twos_comp(int(current_y, 16),16)
             converted_z = twos_comp(int(current_z, 16),16)
-            # logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
+            logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
+                logging.debug("{}, {}".format(str(start_queue_flag.is_set()), str(end_flag.is_set())))
                 if start_queue_flag.is_set() and not end_flag.is_set():
-                    # logging.debug("Putting values in queue from fpga")
+                    logging.debug("Putting values in queue from fpga")
                     x_data.put((-converted_x+250)/600*900)
                     # x_data.append((-converted_x+250)/600*900)
-                    y_mqtt_data.put((-converted_y+250)//30)
                     y_game_data.put((-converted_y+250)//30)
+                    if not y_mqtt_data.full():
+                        y_mqtt_data.put((-converted_y+250)//30)
             except:
                 pass  
         
-        # Send Data to change mode
-        if bombed_flag.is_set():
-            # Bomb received, change to slow mode
-            if not sent_slow:
-                logging.debug("Slowed")
-                proc.send("s")
-                sent_slow = True
-                sent_normal = False
-        else:
-            # back to normal
-            if not sent_normal:
-                logging.debug("Normal Speed")
-                proc.send("n")
-                sent_normal = True
-                sent_slow = False
+        # # Send Data to change mode
+        # if bombed_flag.is_set():
+        #     # Bomb received, change to slow mode
+        #     if not sent_slow:
+        #         logging.debug("Slowed")
+        #         proc.send("s")
+        #         sent_slow = True
+        #         sent_normal = False
+        # else:
+        #     # back to normal
+        #     if not sent_normal:
+        #         logging.debug("Normal Speed")
+        #         proc.send("n")
+        #         sent_normal = True
+        #         sent_slow = False
 
         index += 1
     

@@ -31,29 +31,34 @@ if __name__ == "__main__":
     print(args.username)
     print(args.password)
     # Start Thread for FPGA UART Connection
-    x_data = queue.Queue()
+    x_data = queue.Queue(maxsize=10)
     # x_data = []
-    y_game_data = queue.Queue()
-    y_mqtt_data = queue.Queue()
+    y_game_data = queue.Queue(maxsize=10)
+    y_mqtt_data = queue.Queue(maxsize=10)
     #Ready Event => From game to mqtt
     ready_flag = threading.Event()
     #Start Event => mqtt to game and fpga thread
     start_flag = threading.Event()
     start_queue_flag = threading.Event() #needed cos of countdown
+    start_queue_flag.clear()
     #Final Event => mqtt to game
     final_flag = threading.Event()
+    final_flag.clear()
     #Ready Object => mqtt to game
     ready_object = {}
     #Leaderboard Object => mqtt to game
     leaderboard_object = {}
     #End Game Event => Game to FPGA and MQTT
     end_flag = threading.Event()
+    end_flag.clear()
     #Send bomb => Game to MQTT
     send_bomb_flag = threading.Event()
     #Bomb button press => FPGA to Game
     bp_flag = threading.Event()
+    bp_flag.clear()
     # got bombed => MQTT to Game and FPGA
     bombed_flag = threading.Event()
+    bombed_flag.clear()
 
     fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag))
 

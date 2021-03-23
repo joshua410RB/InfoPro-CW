@@ -56,14 +56,14 @@ class mqtt_client:
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
-            # self.accel_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
-            # self.game_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
-            # self.bomb_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
-            # self.rank_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
-            # self.accel_client.tls_insecure_set(True)
-            # self.bomb_client.tls_insecure_set(True)
-            # self.game_client.tls_insecure_set(True)
-            # self.rank_client.tls_insecure_set(True)
+            self.accel_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.game_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.bomb_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.rank_client.tls_set('ca.crt', tls_version = ssl.PROTOCOL_TLSv1_2)
+            self.accel_client.tls_insecure_set(True)
+            self.bomb_client.tls_insecure_set(True)
+            self.game_client.tls_insecure_set(True)
+            self.rank_client.tls_insecure_set(True)
 
             # set last will message to be sent un ungraceful disconnection
             lwm = self.playername+":died"
