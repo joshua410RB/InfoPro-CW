@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 class mqtt_client:
     def __init__(self, ip, port, username, password, 
                  accel_data, ready_flag, start_flag, final_flag, 
-                 leaderboard_object, ready_object, end_flag):
+                 leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -41,10 +41,10 @@ class mqtt_client:
         self.start_flag = start_flag
         self.end_flag = end_flag
         self.final_flag = final_flag
-
+        self.send_bomb_flag = send_bomb_flag
+        self.bombed_flag = bombed_flag
         # game details
         self.started = False
-        self.bombed = False
         self.leaderboard = leaderboard_object
         self.ready = ready_object
 
@@ -52,14 +52,19 @@ class mqtt_client:
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
-            self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.accel_client.tls_insecure_set(True)
-            self.bomb_client.tls_insecure_set(True)
-            self.game_client.tls_insecure_set(True)
-            self.rank_client.tls_insecure_set(True)
+            # self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            # self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            # self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            # self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+            # self.accel_client.tls_insecure_set(True)
+            # self.bomb_client.tls_insecure_set(True)
+            # self.game_client.tls_insecure_set(True)
+            # self.rank_client.tls_insecure_set(True)
+
+            # set last will message to be sent un ungraceful disconnection
+            lwm = self.playername+":died"
+            self.game_client.will_set("info/game", lwm, qos=1, retain=False)
+
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
             self.game_client.connect(self.brokerip, self.brokerport)
@@ -83,8 +88,6 @@ class mqtt_client:
                 # start sending speed data
                 if not self.accel_data.empty():
                     sensor_data = self.accel_data.get()
-                    if self.bombed:
-                        sensor_data = int(sensor_data/2)
                     logging.debug("Speed: "+str(sensor_data))
                     self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
                 
@@ -124,11 +127,11 @@ class mqtt_client:
             logging.debug("Bad connection")
 
     def on_message_bomb(self, client, obj, msg):
-        message = str(msg.payload.decode("utf-8"))
-        if message == self.playername:
+        name, action = str(msg.payload.decode("utf-8")).split(":")
+        if action == 'bomb' and name == self.playername:
             # received bomb
-            self.bombed = True
-            logging.debug(msg.topic + " received bomb")
+            logging.debug(msg.topic + " bombed :(")
+            self.bombed_flag.set()
     
     # game settings
     def on_publish_game(self, client, userdata, mid):
@@ -183,7 +186,8 @@ class mqtt_client:
             data = json.loads(data) # decode json data
             # sort by position
             sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
-            self.leaderboard.update(data)
+            sorted_dict = {k: v for k,v in sorted_tuples}
+            self.leaderboard.update(sorted_dict)
 
     # handlers
     def show_leaderboard(self):
@@ -195,14 +199,11 @@ class mqtt_client:
 
     def handle_bomb(self):
         while True:
-            time.sleep(0.1)
-            if self.bombed:
-                # must hold for at least 2s 
-                time.sleep(2)
+            time.sleep(0.3)
+            if self.send_bomb_flag.is_set():
                 # send bomb
-                self.bombed = False
-                logging.debug("throw back bomb")
-                self.bomb_client.publish("info/bomb", "sendback", qos=1)
+                logging.debug("throw bomb")
+                self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
 
 # ----------------UART Data-----------------
 def generate_random():
