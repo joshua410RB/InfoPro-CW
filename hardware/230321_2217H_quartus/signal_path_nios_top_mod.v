@@ -81,7 +81,7 @@ module signal_path_nios_top_mod(
     logic[1:0] update_axis;
     logic[1:0] update_bank;
     logic[4:0] update_index;
-    logic[16:0] update_value;
+    logic[15:0] update_value;
 
     logic[9:0] led;
 
@@ -89,8 +89,8 @@ module signal_path_nios_top_mod(
         LEDR = led;
 		// LEDR = y_read;
 
-        ARDUINO_IO[8] = ready;
-        ARDUINO_IO[9] = data_interrupt;
+        // ARDUINO_IO[8] = ready;
+        // ARDUINO_IO[9] = data_interrupt;
         result = x_read;
 
         update_en = update_ctrl[9];
