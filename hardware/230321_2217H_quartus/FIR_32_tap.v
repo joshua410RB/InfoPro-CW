@@ -6,45 +6,45 @@ module FIR_32_tap(
     input logic[15:0] sample_in,
     output logic[15:0] filter_data,
 
-    input logic[16:0] coeff0,
-    input logic[16:0] coeff1,
-    input logic[16:0] coeff2,
-    input logic[16:0] coeff3,
+    input logic[15:0] coeff0,
+    input logic[15:0] coeff1,
+    input logic[15:0] coeff2,
+    input logic[15:0] coeff3,
+    
+    input logic[15:0] coeff4,
+    input logic[15:0] coeff5,
+    input logic[15:0] coeff6,
+    input logic[15:0] coeff7,
 
-    input logic[16:0] coeff4,
-    input logic[16:0] coeff5,
-    input logic[16:0] coeff6,
-    input logic[16:0] coeff7,
+    input logic[15:0] coeff8,
+    input logic[15:0] coeff9,
+    input logic[15:0] coeff10,
+    input logic[15:0] coeff11,
 
-    input logic[16:0] coeff8,
-    input logic[16:0] coeff9,
-    input logic[16:0] coeff10,
-    input logic[16:0] coeff11,
+    input logic[15:0] coeff12,
+    input logic[15:0] coeff13,
+    input logic[15:0] coeff14,
+    input logic[15:0] coeff15,
 
-    input logic[16:0] coeff12,
-    input logic[16:0] coeff13,
-    input logic[16:0] coeff14,
-    input logic[16:0] coeff15,
+    input logic[15:0] coeff16,
+    input logic[15:0] coeff17,
+    input logic[15:0] coeff18,
+    input logic[15:0] coeff19,
 
-    input logic[16:0] coeff16,
-    input logic[16:0] coeff17,
-    input logic[16:0] coeff18,
-    input logic[16:0] coeff19,
+    input logic[15:0] coeff20,
+    input logic[15:0] coeff21,
+    input logic[15:0] coeff22,
+    input logic[15:0] coeff23,
 
-    input logic[16:0] coeff20,
-    input logic[16:0] coeff21,
-    input logic[16:0] coeff22,
-    input logic[16:0] coeff23,
-
-    input logic[16:0] coeff24,
-    input logic[16:0] coeff25,
-    input logic[16:0] coeff26,
-    input logic[16:0] coeff27,
-
-    input logic[16:0] coeff28,
-    input logic[16:0] coeff29,
-    input logic[16:0] coeff30,
-    input logic[16:0] coeff31
+    input logic[15:0] coeff24,
+    input logic[15:0] coeff25,
+    input logic[15:0] coeff26,
+    input logic[15:0] coeff27,
+    
+    input logic[15:0] coeff28,
+    input logic[15:0] coeff29,
+    input logic[15:0] coeff30,
+    input logic[15:0] coeff31
 );
     typedef enum logic[2:0] {
         IDLE = 3'd0,
@@ -66,16 +66,17 @@ module FIR_32_tap(
     logic[15:0] pipe_7_8;
     logic[15:0] sinkhole;
 
-    logic[15:0] f1;
-    logic[15:0] f2;
-    logic[15:0] f3;
-    logic[15:0] f4;
-    logic[15:0] f5;
-    logic[15:0] f6;
-    logic[15:0] f7;
-    logic[15:0] f8;
-    logic[15:0] sum1;
-    logic[15:0] sum2;
+    logic[31:0] f1;
+    logic[31:0] f2;
+    logic[31:0] f3;
+    logic[31:0] f4;
+    logic[31:0] f5;
+    logic[31:0] f6;
+    logic[31:0] f7;
+    logic[31:0] f8;
+    logic[31:0] sum1;
+    logic[31:0] sum2;
+    logic[31:0] final_sum;
 
     wire[15:0] data_in;
     assign data_in = sample_in;
@@ -93,6 +94,7 @@ module FIR_32_tap(
         busy = run | status;
         // sum1 = f1 + f2 + f3 + f4;
         // sum2 = f5 + f6 + f7 + f8;
+        final_sum = sum1 + sum2;
     end
 
     always_ff @(posedge clk) begin
@@ -114,7 +116,7 @@ module FIR_32_tap(
         end
         else if(state==SUM2) begin
             state <= IDLE;
-            filter_data <= sum1 + sum2;
+            filter_data <= final_sum[31:16];
             status <= 0;
         end
     end

@@ -192,11 +192,23 @@ int main()
 
 	  //============ printing to 7-seg display: mode,  and throwing bombs ==============================
 		if(button_datain == 0 && counter1==0)	{
+			print_letters('T', 'H', 'R', 'O', 'V', 'V');
+			// bomb_thrown = 1;
 			counter1=1;
 		}
 		if(counter1>0)	{
-			print_letters('T', 'H', 'R', 'O', 'V', 'V');
-			bomb_thrown = 1;
+			if(counter1 > 60000)	{
+				counter1=0;
+			}
+			else	{
+				if(counter1>2 && counter1<10)	{
+					bomb_thrown = 1;
+				}
+				else	{
+					bomb_thrown = 0;
+				}
+				counter1++;
+			}
 		}
 		else	{
 			if (mode == stop){
@@ -212,14 +224,9 @@ int main()
 				bomb_thrown = 0;
 		  	}
 		}
-		if(counter1>0)	{
-			if(counter1 > 60000)	{
-				counter1=0;
-			}
-			else	{
-				counter1++;
-			}
-		}
+		// if(counter1>0)	{
+			
+		// }
 	  //================================================================================================
 
 	  //================== setting filter coefficients based on the mode player is in ==================
