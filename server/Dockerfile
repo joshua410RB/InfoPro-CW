@@ -4,6 +4,7 @@ WORKDIR /home
 RUN apt-get update
 RUN apt-get install -y mosquitto
 RUN apt-get install -y gcc
+RUN apt-get install -y nano
 RUN apt-get install -y python3
 RUN apt-get install -y python3-pip
 
