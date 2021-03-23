@@ -51,6 +51,12 @@ class Game:
             self.bomb_server.username_pw_set(self.username, self.password)
             self.game_server.username_pw_set(self.username, self.password)
             self.rank_server.username_pw_set(self.username, self.password)
+            self.bomb_server.tls_set('server/keys/ca_certificates/ca.crt')
+            self.game_server.tls_set('server/keys/ca_certificates/ca.crt')
+            self.rank_server.tls_set('server/keys/ca_certificates/ca.crt')
+            self.bomb_server.tls_insecure_set(True)
+            self.game_server.tls_insecure_set(True)
+            self.rank_server.tls_insecure_set(True)
             self.bomb_server.connect(self.brokerip, self.brokerport)    
             self.game_server.connect(self.brokerip, self.brokerport)   
             self.rank_server.connect(self.brokerip, self.brokerport)   
@@ -294,7 +300,7 @@ class Player:
         self.dist += 1/2*(self.speed + self.prev_speed)*0.1 # timestep
 
 def main():
-    game = Game("0.0.0.0", 1883)
+    game = Game("0.0.0.0", 8883)
     game.connect()
     game.threadstart()
 
