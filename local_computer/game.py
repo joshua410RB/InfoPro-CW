@@ -144,23 +144,23 @@ class Game():
             self.screen.blit(start_text, start_rect)
 
             mouse = pygame.mouse.get_pos() 
-            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+            if self.display_width/2+20 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2+20, 100, 40])
 
-            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+60 <= mouse[1] <= self.display_height/2+80:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+60, 100, 40])
+            if self.display_width/2-120 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+60, 100, 40])
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             mult_button_text, mult_button_rect = self.text_objects("Multiplayer", button_text_font, self.black)
-            mult_button_rect.center = ((self.display_width/2+40),(self.display_height/2))
+            mult_button_rect.center = ((self.display_width/2+70),(self.display_height/2))
             self.screen.blit(mult_button_text, mult_button_rect)
             
             single_button_text, single_button_rect = self.text_objects("Single Player", button_text_font, self.black)
-            single_button_rect.center = ((self.display_width/2-4-),(self.display_height/2))
+            single_button_rect.center = ((self.display_width/2-70),(self.display_height/2))
             self.screen.blit(single_button_text, single_button_rect)
             pygame.display.update()
 
@@ -181,18 +181,18 @@ class Game():
         while not self.ready_flag.is_set():            
             self.screen.blit(self.Bg2, (0,0))
             start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font, self.white)
-            start_rect.center = ((self.display_width/2),(self.display_height/2-120))
+            start_rect.center = ((self.display_width/2),(self.display_height/2-80))
             self.screen.blit(start_text, start_rect)
             #self.update_readystatus(self.display_width/2, self.display_height/2)
             mouse = pygame.mouse.get_pos() 
-            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-80 <= mouse[1] <= self.display_height/2-40:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-80, 100, 40])
+            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-80, 100, 40])
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font, self.black)
-            startbutton_rect.center = ((self.display_width/2),(self.display_height/2-60))
+            startbutton_rect.center = ((self.display_width/2),(self.display_height/2-20))
             self.screen.blit(startbutton_text, startbutton_rect)
             pygame.display.update()
 
@@ -201,8 +201,9 @@ class Game():
                     pygame.quit()
                     quit()
                 if event.type == pygame.MOUSEBUTTONDOWN: 
-                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
+                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2: 
                         self.ready_flag.set()
+                        print("Ready")
 
         # Waiting for Start Screen
         while not self.start_flag.is_set():

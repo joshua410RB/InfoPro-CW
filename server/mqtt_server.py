@@ -114,7 +114,7 @@ class Game:
                 self.players[name].status = 2
             elif action == 'died':
                 logging.debug(name+" died")
-                handle_disconnect(name)
+                self.handle_disconnect(name)
 
     # rank: leaderboards
     def on_connect_rank(self, client, obj, flags, rc):
@@ -134,7 +134,7 @@ class Game:
                 name = self.joining.get()
                 if name in self.players:
                     continue
-                self.players[name] = Player(self.brokerip, self.brokerport, name)
+                self.players[name] = Player(self.brokerip, self.brokerport, name, disconnect)
 
     def handle_start(self):
         while True:
@@ -146,8 +146,6 @@ class Game:
                     logging.debug("game ended!")
 
                     # send last leaderboard to everyone
-                    # reset everyone's status to not ready so we can play again
-                    # self.handle_leaderboard(True)
                     self.final_leaderboard.set()
 
             else:
@@ -220,11 +218,15 @@ class Game:
         try:
             logging.debug("deleting "+name)
             del self.players[name]
+            logging.debug("deleting "+name+" ready status")
             del self.ready_data[name]
+            logging.debug("deleting "+name+" in leaderboard")
             del self.leaderboard[name]
+            logging.debug("deleting "+name+" in final leaderboard")
             del self.final_leaderboard[name]
+            logging.debug("deleted all instances of "+name)
         except:
-            logging.debug(name+" cannot be deleted: doesnt exist")
+            logging.debug(name+" some stuff cannot be deleted")
 
     def start_server_handler(self):
         logging.debug("Server Started")
@@ -236,7 +238,7 @@ class Game:
 
         
 class Player:
-    def __init__(self, ip, port, playername):
+    def __init__(self, ip, port, playername, disconnect):
         self.brokerip = ip
         self.brokerport = port
         self.playername = playername
@@ -261,6 +263,7 @@ class Player:
         self.startthread = threading.Thread(target=self.start)
         self.connect()
         self.threadstart()
+        self.disconnect = disconnect
         
     def connect(self):
         try:
