@@ -152,7 +152,7 @@ class Game():
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
 
-            if self.display_width/2-120 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
+            if self.display_width/2-120 <= mouse[0] <= self.display_width/2-20 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
                 pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
@@ -172,11 +172,11 @@ class Game():
                     pygame.quit()
                     quit()
                 if event.type == pygame.MOUSEBUTTONDOWN: 
-                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
+                    if self.display_width/2+20 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20: 
                         self.gameStart =True 
-                    # if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+60 <= mouse[1] <= self.display_height/2+100: 
-                    #     self.gameStart =True 
-                    #     self.race_screen("single ")
+                    if self.display_width/2-120 <= mouse[0] <= self.display_width/2-20 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20: 
+                        self.gameStart =True 
+                        self.race_screen("single")
         self.multiplayer_screen()
 
     def multiplayer_screen(self):
@@ -410,14 +410,11 @@ class Game():
         while not self.gameExit:
             self.screen.blit(self.leaderboardBg, (0,0))
             self.screen.blit(self.calculatingBg, (250, 505)) 
-            #start_text, start_rect = self.text_objects("Final Results", self.text_font, self.black)
-            #start_rect.center = ((self.display_width/2),(self.display_height/2-50))
-    
-            #self.screen.blit(start_text, start_rect)
+
             self.update_leaderboard(0.5,0.25)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+80 <= mouse[1] <= self.display_height/2+120:
-                pygame.draw.rect(self.screen, self.black, [self.display_width/2-50, self.display_height/2+80, 100, 40])
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
             else:
                 pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
 
@@ -439,7 +436,7 @@ class Game():
                     pygame.quit()
                     quit()
                 if event.type == pygame.MOUSEBUTTONDOWN: 
-                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
+                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+80 <= mouse[1] <= self.display_height/2+120: 
                         self.gameExit = True
                         self.start_queue_flag.clear()
         self.gameExit = False
