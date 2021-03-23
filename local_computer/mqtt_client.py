@@ -36,6 +36,8 @@ class mqtt_client:
         self.rank_client.on_subscribe =self.on_sub_rank
         self.username = username
         self.password = password
+
+        # data thats being passed around
         self.accel_data = accel_data
         self.ready_flag = ready_flag
         self.start_flag = start_flag
@@ -43,11 +45,12 @@ class mqtt_client:
         self.final_flag = final_flag
         self.send_bomb_flag = send_bomb_flag
         self.bombed_flag = bombed_flag
+        self.ready = ready_object
+
         # game details
         self.started = False
         self.leaderboard = leaderboard_object
-        self.ready = ready_object
-
+        
     def connect(self):
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
@@ -203,6 +206,7 @@ class mqtt_client:
             if self.send_bomb_flag.is_set():
                 # send bomb
                 logging.debug("throw bomb")
+                self.send_bomb_flag.clear()
                 self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
 
 # ----------------UART Data-----------------

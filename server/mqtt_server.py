@@ -114,7 +114,7 @@ class Game:
                 self.players[name].status = 2
             elif action == 'died':
                 logging.debug(name+" died")
-                handle_disconnect(name)
+                self.handle_disconnect(name)
 
     # rank: leaderboards
     def on_connect_rank(self, client, obj, flags, rc):
@@ -146,8 +146,6 @@ class Game:
                     logging.debug("game ended!")
 
                     # send last leaderboard to everyone
-                    # reset everyone's status to not ready so we can play again
-                    # self.handle_leaderboard(True)
                     self.final_leaderboard.set()
 
             else:
@@ -218,13 +216,18 @@ class Game:
 
     def handle_disconnect(self, name):
         try:
-            logging.debug("deleting "+name)
+            logging.debug("deleting "+name+" object")
+            self.players[name].disconnect = True
             del self.players[name]
+            logging.debug("deleting "+name+" ready status")
             del self.ready_data[name]
+            logging.debug("deleting "+name+" in leaderboard")
             del self.leaderboard[name]
+            logging.debug("deleting "+name+" in final leaderboard")
             del self.final_leaderboard[name]
+            logging.debug("deleted all instances of "+name)
         except:
-            logging.debug(name+" cannot be deleted: doesnt exist")
+            logging.debug(name+" some stuff cannot be deleted")
 
     def start_server_handler(self):
         logging.debug("Server Started")
@@ -261,6 +264,7 @@ class Player:
         self.startthread = threading.Thread(target=self.start)
         self.connect()
         self.threadstart()
+        self.disconnect = False
         
     def connect(self):
         try:
@@ -274,7 +278,9 @@ class Player:
         logging.debug(self.playername+" created")
         self.accel_server.loop_start()
         while True:
-            pass
+            time.sleep(0.1)
+            if(self.disconnect):
+                break
     
     def threadstart(self):
         self.speedthread.daemon = True
@@ -308,6 +314,9 @@ class Player:
                     continue
                 speed = self.speedq.get()
                 self.calcDist(int(speed))
+            
+            if(self.disconnect):
+                break
 
     # assumes linear acceleration between speed datas
     def calcDist(self, newspeed):

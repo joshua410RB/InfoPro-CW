@@ -11,7 +11,6 @@ class Player(pygame.sprite.Sprite):
         # self.image = pygame.Surface([width, height])
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
-        self.bombnumber = 0
 
     def update(self, pos_x, pos_y):
         self.rect.center = [pos_x, pos_y]
@@ -26,7 +25,6 @@ class Player(pygame.sprite.Sprite):
     def item_collect(self, item_group):
         item_hit = pygame.sprite.spritecollide(self, item_group, True)
         if len(item_hit)>0:
-            self.bombnumber +=1
             return True
         else:
             return False
@@ -81,7 +79,9 @@ class Game():
         self.start_queue_flag = start_queue_flag
         self.final_flag = final_flag
         self.end_flag = end_flag
+        self.bp_flag = bp_flag
         self.bombed_flag = bombed_flag
+        self.send_bomb_flag = send_bomb_flag
         self.gameStart = False
         self.gameExit = False
         self.leaderboard = leaderboard_object
@@ -99,7 +99,8 @@ class Game():
         self.calculatingBg = pygame.image.load('img/calculating.png')
         self.finalBg = pygame.image.load('img/final_result.png')
         self.leaderboardBg = pygame.image.load('img/leaderboard.png')
-        
+        self.bombnumber = 0
+
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
@@ -144,23 +145,23 @@ class Game():
             self.screen.blit(start_text, start_rect)
 
             mouse = pygame.mouse.get_pos() 
-            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+            if self.display_width/2+20 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+20, 100, 40])
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
 
-            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+60 <= mouse[1] <= self.display_height/2+80:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+60, 100, 40])
+            if self.display_width/2-120 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+60, 100, 40])
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             mult_button_text, mult_button_rect = self.text_objects("Multiplayer", button_text_font, self.black)
-            mult_button_rect.center = ((self.display_width/2+40),(self.display_height/2))
+            mult_button_rect.center = ((self.display_width/2+70),(self.display_height/2))
             self.screen.blit(mult_button_text, mult_button_rect)
             
             single_button_text, single_button_rect = self.text_objects("Single Player", button_text_font, self.black)
-            single_button_rect.center = ((self.display_width/2-4-),(self.display_height/2))
+            single_button_rect.center = ((self.display_width/2-70),(self.display_height/2))
             self.screen.blit(single_button_text, single_button_rect)
             pygame.display.update()
 
@@ -181,18 +182,18 @@ class Game():
         while not self.ready_flag.is_set():            
             self.screen.blit(self.Bg2, (0,0))
             start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font, self.white)
-            start_rect.center = ((self.display_width/2),(self.display_height/2-120))
+            start_rect.center = ((self.display_width/2),(self.display_height/2-80))
             self.screen.blit(start_text, start_rect)
             #self.update_readystatus(self.display_width/2, self.display_height/2)
             mouse = pygame.mouse.get_pos() 
-            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-80 <= mouse[1] <= self.display_height/2-40:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-80, 100, 40])
+            if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2:
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-80, 100, 40])
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font, self.black)
-            startbutton_rect.center = ((self.display_width/2),(self.display_height/2-60))
+            startbutton_rect.center = ((self.display_width/2),(self.display_height/2-20))
             self.screen.blit(startbutton_text, startbutton_rect)
             pygame.display.update()
 
@@ -201,8 +202,9 @@ class Game():
                     pygame.quit()
                     quit()
                 if event.type == pygame.MOUSEBUTTONDOWN: 
-                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+20 <= mouse[1] <= self.display_height/2+60: 
+                    if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2: 
                         self.ready_flag.set()
+                        print("Ready")
 
         # Waiting for Start Screen
         while not self.start_flag.is_set():
@@ -279,6 +281,8 @@ class Game():
     def race_screen(self, mode):
         print("Go into race screen")
         start_time = pygame.time.get_ticks()
+        start_slow_time = 0
+        slowed = False
 
         # Create Player Sprite
         x = (self.display_width * 0.45)
@@ -324,15 +328,6 @@ class Game():
                     pygame.quit()
                     quit()
 
-                # if event.type == pygame.KEYDOWN:
-                #     if event.key == pygame.K_LEFT:
-                #         x_change = -5
-                #     if event.key == pygame.K_RIGHT:
-                #         x_change = 5
-                #     if event.key == pygame.K_UP:
-                #         obstacle_speed += 3                   
-                #     if event.key == pygame.K_DOWN:
-                #         obstacle_speed -= 3
             x = self.x_data[-1]
             # x = self.x_data.get()
             # self.x_data.task_done()
@@ -355,6 +350,26 @@ class Game():
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
 
+            # Bomb Logic 
+            if self.bp_flag.is_set():
+                if self.bombnumber > 0:
+                    self.bombnumber -= 1
+                    self.bp_flag.clear()
+                    self.send_bomb_flag.set()
+
+            if self.bombed_flag.is_set():
+                start_slow_time = pygame.time.get_ticks()
+                self.bombed_flag.clear()
+                slowed = True
+
+            if (slowed):
+                if int(pygame.time.get_ticks() - start_slow_time)//1000 < 3:
+                    largeText = pygame.font.Font('freesansbold.ttf',40)
+                    TextSurf, TextRect = self.text_objects("You are slowed!", largeText, self.white)
+                    TextRect.center = ((self.display_width/2),(self.display_height/2))
+                    self.screen.blit(TextSurf, TextRect)
+                else:
+                    slowed = False
 
             # Check for crashes
             if player.collide(obstacle_group):
@@ -365,6 +380,9 @@ class Game():
                 item_startx = random.randrange(0,self.display_width)
                 item = Item(item_startx, item_starty)
                 item_group.add(item)
+                self.bombnumber += 1
+
+
 
             if x > self.display_width - self.car_width or x < 0:
                 self.crash(obstacle_group, False)
