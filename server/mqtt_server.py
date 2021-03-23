@@ -134,7 +134,7 @@ class Game:
                 name = self.joining.get()
                 if name in self.players:
                     continue
-                self.players[name] = Player(self.brokerip, self.brokerport, name, disconnect)
+                self.players[name] = Player(self.brokerip, self.brokerport, name)
 
     def handle_start(self):
         while True:
@@ -216,7 +216,8 @@ class Game:
 
     def handle_disconnect(self, name):
         try:
-            logging.debug("deleting "+name)
+            logging.debug("deleting "+name+" object")
+            self.players[name].disconnect = True
             del self.players[name]
             logging.debug("deleting "+name+" ready status")
             del self.ready_data[name]
@@ -238,7 +239,7 @@ class Game:
 
         
 class Player:
-    def __init__(self, ip, port, playername, disconnect):
+    def __init__(self, ip, port, playername):
         self.brokerip = ip
         self.brokerport = port
         self.playername = playername
@@ -263,7 +264,7 @@ class Player:
         self.startthread = threading.Thread(target=self.start)
         self.connect()
         self.threadstart()
-        self.disconnect = disconnect
+        self.disconnect = False
         
     def connect(self):
         try:
@@ -277,7 +278,9 @@ class Player:
         logging.debug(self.playername+" created")
         self.accel_server.loop_start()
         while True:
-            pass
+            time.sleep(0.1)
+            if(self.disconnect):
+                break
     
     def threadstart(self):
         self.speedthread.daemon = True
@@ -311,6 +314,9 @@ class Player:
                     continue
                 speed = self.speedq.get()
                 self.calcDist(int(speed))
+            
+            if(self.disconnect):
+                break
 
     # assumes linear acceleration between speed datas
     def calcDist(self, newspeed):

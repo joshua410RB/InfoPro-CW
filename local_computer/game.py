@@ -11,7 +11,6 @@ class Player(pygame.sprite.Sprite):
         # self.image = pygame.Surface([width, height])
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
-        self.bombnumber = 0
 
     def update(self, pos_x, pos_y):
         self.rect.center = [pos_x, pos_y]
@@ -26,7 +25,6 @@ class Player(pygame.sprite.Sprite):
     def item_collect(self, item_group):
         item_hit = pygame.sprite.spritecollide(self, item_group, True)
         if len(item_hit)>0:
-            self.bombnumber +=1
             return True
         else:
             return False
@@ -81,7 +79,9 @@ class Game():
         self.start_queue_flag = start_queue_flag
         self.final_flag = final_flag
         self.end_flag = end_flag
+        self.bp_flag = bp_flag
         self.bombed_flag = bombed_flag
+        self.send_bomb_flag = send_bomb_flag
         self.gameStart = False
         self.gameExit = False
         self.leaderboard = leaderboard_object
@@ -99,7 +99,8 @@ class Game():
         self.calculatingBg = pygame.image.load('img/calculating.png')
         self.finalBg = pygame.image.load('img/final_result.png')
         self.leaderboardBg = pygame.image.load('img/leaderboard.png')
-        
+        self.bombnumber = 0
+
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
@@ -147,7 +148,7 @@ class Game():
             if self.display_width/2+20 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
                 pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2+20, 100, 40])
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
 
             if self.display_width/2-120 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
                 pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
@@ -280,6 +281,8 @@ class Game():
     def race_screen(self, mode):
         print("Go into race screen")
         start_time = pygame.time.get_ticks()
+        start_slow_time = 0
+        slowed = False
 
         # Create Player Sprite
         x = (self.display_width * 0.45)
@@ -325,15 +328,6 @@ class Game():
                     pygame.quit()
                     quit()
 
-                # if event.type == pygame.KEYDOWN:
-                #     if event.key == pygame.K_LEFT:
-                #         x_change = -5
-                #     if event.key == pygame.K_RIGHT:
-                #         x_change = 5
-                #     if event.key == pygame.K_UP:
-                #         obstacle_speed += 3                   
-                #     if event.key == pygame.K_DOWN:
-                #         obstacle_speed -= 3
             x = self.x_data[-1]
             # x = self.x_data.get()
             # self.x_data.task_done()
@@ -356,6 +350,26 @@ class Game():
             self.screen.blit(currspeed_text, currspeed_rect)
             self.screen.blit(time_text, time_rect)
 
+            # Bomb Logic 
+            if self.bp_flag.is_set():
+                if self.bombnumber > 0:
+                    self.bombnumber -= 1
+                    self.bp_flag.clear()
+                    self.send_bomb_flag.set()
+
+            if self.bombed_flag.is_set():
+                start_slow_time = pygame.time.get_ticks()
+                self.bombed_flag.clear()
+                slowed = True
+
+            if (slowed):
+                if int(pygame.time.get_ticks() - start_slow_time)//1000 < 3:
+                    largeText = pygame.font.Font('freesansbold.ttf',40)
+                    TextSurf, TextRect = self.text_objects("You are slowed!", largeText, self.white)
+                    TextRect.center = ((self.display_width/2),(self.display_height/2))
+                    self.screen.blit(TextSurf, TextRect)
+                else:
+                    slowed = False
 
             # Check for crashes
             if player.collide(obstacle_group):
@@ -366,6 +380,9 @@ class Game():
                 item_startx = random.randrange(0,self.display_width)
                 item = Item(item_startx, item_starty)
                 item_group.add(item)
+                self.bombnumber += 1
+
+
 
             if x > self.display_width - self.car_width or x < 0:
                 self.crash(obstacle_group, False)
