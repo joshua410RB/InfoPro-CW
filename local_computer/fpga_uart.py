@@ -57,7 +57,6 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
             converted_z = twos_comp(int(current_z, 16),16)
             logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
-                logging.debug("{}, {}".format(str(start_queue_flag.is_set()), str(end_flag.is_set())))
                 if start_queue_flag.is_set() and not end_flag.is_set():
                     logging.debug("Putting values in queue from fpga")
                     x_data.put((-converted_x+250)/600*900)
@@ -68,21 +67,21 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
             except:
                 pass  
         
-        # # Send Data to change mode
-        # if bombed_flag.is_set():
-        #     # Bomb received, change to slow mode
-        #     if not sent_slow:
-        #         logging.debug("Slowed")
-        #         proc.send("s")
-        #         sent_slow = True
-        #         sent_normal = False
-        # else:
-        #     # back to normal
-        #     if not sent_normal:
-        #         logging.debug("Normal Speed")
-        #         proc.send("n")
-        #         sent_normal = True
-        #         sent_slow = False
+        # Send Data to change mode
+        if bombed_flag.is_set():
+            # Bomb received, change to slow mode
+            if not sent_slow:
+                logging.debug("Slowed")
+                proc.send("s")
+                sent_slow = True
+                sent_normal = False
+        else:
+            # back to normal
+            if not sent_normal:
+                logging.debug("Normal Speed")
+                proc.send("n")
+                sent_normal = True
+                sent_slow = False
 
         index += 1
     
