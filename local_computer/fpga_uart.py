@@ -32,32 +32,32 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
     # Start off with Normal Mode
     proc.send("n")
     index = 0
-    sent = False
+    sent_slow = sent_normal = False
     while True:
         output = proc.readline().decode('utf-8')
-        logging.debug(output)
+        # logging.debug(output)
         tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
         tmp = tmp[1].split("|")
-        logging.debug(tmp)
+        # logging.debug(tmp)
 
         # Receive Data
         if len(tmp) > 2:
             current_x = tmp[0]
             current_y = tmp[1]
             current_z = tmp[2]
-            button_pressed = tmp[3]
+            button_pressed = int(tmp[3])
             if button_pressed == 1:
                 bp_flag.set()
             elif button_pressed == 0:
                 bp_flag.clear()
-            logging.debug(current_x+", "+current_y)
+            # logging.debug(current_x+", "+current_y)
             converted_x = twos_comp(int(current_x, 16),16)
             converted_y = twos_comp(int(current_y, 16),16)
             converted_z = twos_comp(int(current_z, 16),16)
-            logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
+            # logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
                 if start_queue_flag.is_set() and not end_flag.is_set():
-                    logging.debug("Putting values in queue from fpga")
+                    # logging.debug("Putting values in queue from fpga")
                     x_data.put((-converted_x+250)/600*900)
                     # x_data.append((-converted_x+250)/600*900)
                     y_mqtt_data.put((-converted_y+250)//30)
@@ -66,19 +66,21 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
                 pass  
         
         # Send Data to change mode
-        if bombed_flag.is_set() 
+        if bombed_flag.is_set():
             # Bomb received, change to slow mode
             if not sent_slow:
+                logging.debug("Slowed")
                 proc.send("s")
                 sent_slow = True
                 sent_normal = False
         else:
             # back to normal
             if not sent_normal:
+                logging.debug("Normal Speed")
                 proc.send("n")
                 sent_normal = True
                 sent_slow = False
-                
+
         index += 1
     
     logging.debug("Closing UART")

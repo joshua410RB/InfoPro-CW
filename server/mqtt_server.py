@@ -258,13 +258,13 @@ class Player:
         self.speedq = Queue()
         self.status = 0 
         # 0 = not ready, 1 = ready, 2 = ended
+        self.disconnect = False
         
         # threads and starting processes
         self.speedthread = threading.Thread(target=self.handle_speed)
         self.startthread = threading.Thread(target=self.start)
         self.connect()
         self.threadstart()
-        self.disconnect = False
         
     def connect(self):
         try:
