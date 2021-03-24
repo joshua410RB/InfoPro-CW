@@ -38,6 +38,7 @@ class Game:
         self.bombs = Queue() # list of names where the bomb comes from
         self.joining = Queue()
         self.ready_data = {}
+        self.dead_people = {}
 
         # threads and starting processes
         self.mqtt_thread = threading.Thread(target=self.start_server_handler)
@@ -133,8 +134,13 @@ class Game:
             while not self.joining.empty():
                 name = self.joining.get()
                 if name in self.players:
-                    continue
-                self.players[name] = Player(self.brokerip, self.brokerport, name)
+                    break
+                try:
+                    # if player exist but dead
+                    player = self.dead_people[name]
+                    self.players[name] = player
+                except:
+                    self.players[name] = Player(self.brokerip, self.brokerport, name)
 
     def handle_start(self):
         while True:
@@ -216,8 +222,13 @@ class Game:
 
     def handle_disconnect(self, name):
         try:
-            logging.debug("deleting "+name+" object")
+            logging.debug("moving to dead people list")
             self.players[name].disconnect = True
+            time.sleep(0.1)
+            self.players[name].speedthread.join()
+            self.players[name].startthread.join()
+            player = self.players[name]
+            self.dead_people[name] = player
             del self.players[name]
             logging.debug("deleting "+name+" ready status")
             del self.ready_data[name]
@@ -261,8 +272,8 @@ class Player:
         self.disconnect = False
         
         # threads and starting processes
-        self.speedthread = threading.Thread(target=self.handle_speed)
-        self.startthread = threading.Thread(target=self.start)
+        self.speedthread = threading.Thread(target=self.handle_speed, daemon=True)
+        self.startthread = threading.Thread(target=self.start, daemon=True)
         self.connect()
         self.threadstart()
         
@@ -278,16 +289,19 @@ class Player:
         logging.debug(self.playername+" created")
         self.accel_server.loop_start()
         while True:
-            time.sleep(0.1)
+            time.sleep(0.5)
             if(self.disconnect):
                 break
+        
+        logging.debug("start thread ended")
     
     def threadstart(self):
-        self.speedthread.daemon = True
-        self.startthread.daemon = True
-
         self.speedthread.start()
         self.startthread.start()
+
+        # # killing the threads?
+        # self.speedthread.join()
+        # self.startthread.join()
 
     # MQTT Callbacks    
     def on_subscribe_accel(self, client, userdata, mid, granted_qos):
@@ -317,6 +331,8 @@ class Player:
             
             if(self.disconnect):
                 break
+        
+        logging.debug("speed thread ended")
 
     # assumes linear acceleration between speed datas
     def calcDist(self, newspeed):
