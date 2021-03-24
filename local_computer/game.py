@@ -96,14 +96,14 @@ class Game():
 
         self.obstacle_starty = -self.display_height
         self.obstacle_startx = random.randrange(0, self.display_width)
-        self.Bg1 = pygame.image.load('img/startscreen.png')
-        self.Bg2 = pygame.image.load('img/multiplayer_screen.png')
-        self.Bg3 = pygame.image.load('img/ready_screen.png')
-        self.Bg4 = pygame.image.load('img/countdown_screen.png')
-        self.roadBg = pygame.image.load('img/road.png')
-        self.calculatingBg = pygame.image.load('img/calculating.png')
-        self.finalBg = pygame.image.load('img/final_result.png')
-        self.leaderboardBg = pygame.image.load('img/leaderboard.png')
+        self.Bg1 = pygame.image.load('img/startscreen.png').convert()
+        self.Bg2 = pygame.image.load('img/multiplayer_screen.png').convert()
+        self.Bg3 = pygame.image.load('img/ready_screen.png').convert()
+        self.Bg4 = pygame.image.load('img/countdown_screen.png').convert()
+        self.roadBg = pygame.image.load('img/road.png').convert()
+        self.calculatingBg = pygame.image.load('img/calculating.png').convert()
+        self.finalBg = pygame.image.load('img/final_result.png').convert()
+        self.leaderboardBg = pygame.image.load('img/leaderboard.png').convert()
         self.bombnumber = 0
 
         # Pre rendering text
@@ -115,12 +115,12 @@ class Game():
         # Multiplayer mode button
         self.start_white_m = pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
         self.start_grey_m = pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
-        self.start_m_text = self.text_objects("Multiplayer", self.text_font_small, self.black)
+        self.start_m_text = self.text_objects("Multiplayer", self.text_font_small, self.white)
 
         # Singleplayer mode
         self.start_white_s = pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
         self.start_grey_s = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
-        self.start_s_text = self.text_objects("Single Player", self.text_font_small, self.black)
+        self.start_s_text = self.text_objects("Single Player", self.text_font_small, self.white)
 
 
         #### MULTIPLAYER SCREEN ####
@@ -139,7 +139,7 @@ class Game():
         #### ENDSCREEN ####
         self.exit_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
         self.exit_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
-        self.exit_text = self.text_objects("Exit", self.text_font_small, self.black)       
+        self.exit_text = self.text_objects("Exit", self.text_font_small, self.white)       
 
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
@@ -189,8 +189,8 @@ class Game():
         while not self.gameStart:            
             self.screen.fill(self.white)
             self.screen.blit(self.Bg1,(0,0))
-           # start_text, start_rect = self.text_objects("Racing Game", self.text_font, self.black)
-           # start_rect.center = ((self.display_width/2),(self.display_height/2-50))
+            start_text, start_rect = self.text_objects("Racing Game", self.text_font, self.black)
+            # start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
 
@@ -280,14 +280,14 @@ class Game():
         # Countdown screen
         start_time = pygame.time.get_ticks()
         
-        countdown = 5 
-        while int(pygame.time.get_ticks() - start_time)//1000 < 6:
+        countdown = 3
+        while int(pygame.time.get_ticks() - start_time)//1000 < 4:
             self.screen.blit(self.Bg4, (0,0))
             text = "START!" if (countdown == 0) else str(countdown)
             countdown_text, countdown_rect = self.text_objects(text, self.text_font, self.black)
             countdown_rect.center = ((self.display_width/2),(self.display_height/2))
             self.screen.blit(countdown_text, countdown_rect)
-            if int(pygame.time.get_ticks() - start_time)//1000 > (5-countdown):
+            if int(pygame.time.get_ticks() - start_time)//1000 > (3-countdown):
                 countdown -= 1
             pygame.display.update()
             for event in pygame.event.get():
