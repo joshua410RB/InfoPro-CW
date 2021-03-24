@@ -18,7 +18,7 @@ module FIR_4_tap(
     logic[31:0] mult2;
     logic[31:0] mult3;
     logic[31:0] mult4;
-    logic[15:0] sum;
+    logic[31:0] sum;
 
     initial begin
         sample_out = 0;
@@ -33,12 +33,12 @@ module FIR_4_tap(
         mult2 = temp1 * coeff2;
         mult3 = temp2 * coeff3;
         mult4 = temp3 * coeff4;
-        sum = acc_in + mult1[31:16] + mult2[31:16] + mult3[31:16] + mult4[31:16];
+        sum = mult1 + mult2 + mult3 + mult4;
     end
 
     always_ff @(posedge clk) begin
         if(enable==1) begin
-            acc_out <= sum;
+            acc_out <= sum[31:16];
             temp1 <= sample_in;
             temp2 <= temp1;
             temp3 <= temp2;
