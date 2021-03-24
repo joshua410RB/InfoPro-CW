@@ -43,6 +43,7 @@ if __name__ == "__main__":
     config.send_bomb_flag.clear()
     config.bp_flag.clear()
     config.bombed_flag.clear()
+    
 
     fpga_thread = threading.Thread(name = "fpga-thread",target=uart_handler, args=('n', args.wsl))
 

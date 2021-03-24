@@ -87,6 +87,7 @@ class Game():
         self.gameExit = False
         self.leaderboard = config.leaderboard_object
         self.ready = config.ready_object
+        self.highscore = highscore_object
         self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',30)
         self.text_font_small = pygame.font.Font('assets/Roboto-Regular.ttf',15)
         self.largeText = pygame.font.Font('freesansbold.ttf',40)
