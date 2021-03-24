@@ -184,7 +184,8 @@ class Game:
                 randomise = False
                 # trying to send to the person ahead of you
                 # if first place then random send
-                for i, name in enumerate(self.leaderboard):                    
+                leaderboard_dict = self.leaderboard.copy()
+                for i, name in enumerate(leaderboard_dict):                    
                     if name == sender and i != 0:
                         break
                     elif name == sender and i == 0:
@@ -202,7 +203,8 @@ class Game:
         while True:
             if(self.started or self.final_leaderboard.is_set()):
                 time.sleep(0.1)
-                for name, player in self.players.items():
+                players_dict = self.players.copy()
+                for name, player in players_dict.items():
                     self.leaderboard[name] = int(player.dist)
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
                     self.leaderboard = {k: v for k,v in sorted_tuples}
@@ -214,7 +216,7 @@ class Game:
                     logging.debug("final leaderboard")
                     self.rank_server.publish("info/leaderboard/final", "final", qos=1)
                     self.final_leaderboard.clear()  
-                    for _, player in self.players.items():
+                    for _, player in players_dict.items():
                         player.dist = 0
                         player.speed = 0
                         player.status = 0
