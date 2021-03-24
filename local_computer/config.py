@@ -11,6 +11,7 @@ y_game_data_deque = deque()
 
 dist_data = 0
 
+highscore_object = {}
 
 ######### Threading Flags
 #Ready Event => From game to mqtt
