@@ -40,6 +40,9 @@ class Game:
         self.ready_data = {}
         self.dead_people = {}
 
+        # db stuff
+        self.db = create_connection('db/racegame.db')
+
         # threads and starting processes
         self.mqtt_thread = threading.Thread(target=self.start_server_handler)
         self.join_thread = threading.Thread(target=self.handle_join)
@@ -108,8 +111,11 @@ class Game:
                     # if game started cannot join anymore
                     self.joining.put(name)
             elif action == "ready":
-                logging.debug(name+" is ready")
-                self.players[name].status = 1
+                try:
+                    logging.debug(name+" is ready")
+                    self.players[name].status = 1
+                except:
+                    logging.debug(name+" hasn't joined yet, please join first!")
             elif action == 'end':
                 logging.debug(name+" ended")
                 self.players[name].status = 2
@@ -139,6 +145,7 @@ class Game:
                     # if player exist but dead
                     player = self.dead_people[name]
                     self.players[name] = player
+                    del self.dead_people[name]
                 except:
                     self.players[name] = Player(self.brokerip, self.brokerport, name)
 
@@ -214,6 +221,8 @@ class Game:
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
                 if self.final_leaderboard.is_set():
                     logging.debug("final leaderboard")
+                    # add to sql database
+                    
                     self.rank_server.publish("info/leaderboard/final", "final", qos=1)
                     self.final_leaderboard.clear()  
                     for _, player in players_dict.items():
