@@ -59,7 +59,7 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
         converted_y = twos_comp(int(current_y, 16),16)
         converted_z = twos_comp(int(current_z, 16),16)
         current_time = time.time()
-        if current_time - start_time > 0.005:
+        if current_time - start_time > 0.0005:
         # if True:
             logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
