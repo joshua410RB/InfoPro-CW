@@ -4,6 +4,7 @@ import random
 import queue
 import logging
 from pygame.locals import *
+import config
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -54,7 +55,7 @@ class Item(pygame.sprite.Sprite):
 
 
 class Game():
-    def __init__(self, x_data, y_data, 
+    def __init__(self, x_data1, y_data1, 
                  ready_flag, start_flag, start_queue_flag, final_flag, 
                  leaderboard_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag,
                  display_width = 800, display_height = 600):
@@ -75,8 +76,8 @@ class Game():
         pygame.display.set_icon(self.icon)
         self.clock = pygame.time.Clock()
         # Set game objects
-        self.x_data = x_data
-        self.y_data = y_data
+        self.x_data = x_data1
+        self.y_data = y_data1
         self.ready_flag = ready_flag
         self.start_flag = start_flag
         self.start_queue_flag = start_queue_flag
@@ -330,11 +331,10 @@ class Game():
         while (self.gameStart):
             self.screen.blit(self.roadBg,(0,0))  
             try:
-                obstacle_speed = self.y_data.popleft()
+                obstacle_speed = config.y_game_data
                 logging.debug("Taking from y queue")
             except IndexError:
                 logging.debug("Y queue empty")
-            logging.debug("Current x_data size: "+str(len(self.x_data))+". Current y_data size: "+str(len(self.y_data)))
             item_speed = obstacle_speed - 2
 
             
@@ -353,7 +353,7 @@ class Game():
 
             # x = self.x_data[-1]
             try:
-                x = self.x_data.popleft()
+                x = config.x_data
                 logging.debug("Taking from queue")
             except IndexError:
                 logging.debug("Queue Empty")
@@ -423,8 +423,7 @@ class Game():
                 item_startx = random.randrange(10,self.display_width-10)
 
             pygame.display.update()
-            logging.debug(self.clock.get_fps())
-            self.clock.tick(60)
+            self.clock.tick(120)
 
         self.end_flag.set()
         self.end_screen()

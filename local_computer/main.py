@@ -32,9 +32,9 @@ if __name__ == "__main__":
     print("Welcome {}".format(args.username))
     print("Attempting to connect to {} via {}".format(args.serverip, args.port))
     # Start Thread for FPGA UART Connection
-    x_data = deque()
+    x_data_1 = deque()
     # x_data = []
-    y_game_data = deque()
+    y_game_data_1 = deque()
     y_mqtt_data = deque()
     #Ready Event => From game to mqtt
     ready_flag = threading.Event()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     bombed_flag = threading.Event()
     bombed_flag.clear()
 
-    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, args.wsl))
+    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data_1,y_game_data_1, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, args.wsl))
 
     # Start Thread for MQTT Client Start Client     
     mqtt = mqtt_client(args.serverip, int(args.port), args.username, args.password, args.encrypt,
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     mqtt_thread = threading.Thread(target=mqtt.start_client)    
     
     # Start Thread for game
-    new_game = Game(x_data, y_game_data, 
+    new_game = Game(x_data_1, y_game_data_1, 
                     ready_flag, start_flag, start_queue_flag, final_flag, 
                     leaderboard_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag)
     

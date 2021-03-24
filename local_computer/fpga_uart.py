@@ -6,6 +6,8 @@ import re
 import pexpect
 import sys
 import threading
+import config
+
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
@@ -18,7 +20,7 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 
-def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, wsl):
+def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, wsl):
     logging.debug("Starting FPGA UART")
     if wsl:
         inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
@@ -59,14 +61,16 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
         converted_y = twos_comp(int(current_y, 16),16)
         converted_z = twos_comp(int(current_z, 16),16)
         current_time = time.time()
-        if current_time - start_time > 0.0005:
-        # if True:
-            logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
+        # if current_time - start_time > 0.0005:
+        if True:
+            # logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
                 if start_queue_flag.is_set() and not end_flag.is_set():
                     logging.debug("Putting values in queue from fpga")
-                    x_data.append((-converted_x+250)/600*900)
-                    y_game_data.append((-converted_y+250)//30)
+                    # x_data.append((-converted_x+250)/600*900)
+                    config.x_data=((-converted_x+250)/600*900)
+                    # y_game_data.append((-converted_y+250)//30)
+                    config.y_game_data = ((-converted_y+250)//30)
                     y_mqtt_data.append((-converted_y+250)//30)
             except:
                 pass  
