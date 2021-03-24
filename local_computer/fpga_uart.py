@@ -1,7 +1,7 @@
 import time
 import subprocess
 import logging
-import queue 
+from collections import deque
 import re
 import pexpect
 import sys
@@ -18,10 +18,14 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 
-def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag):
+def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, wsl):
     logging.debug("Starting FPGA UART")
-    proc = pexpect.spawn('nios2-terminal')    # logfile=sys.stdout
-    proc.expect("Use the IDE stop button or Ctrl-C to terminate")
+    if wsl:
+        inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
+        proc = pexpect.spawn('/bin/bash',['-c', inputCmd])    # logfile=sys.stdout
+    else:
+        proc = pexpect.spawn('nios2-terminal')    # logfile=sys.stdout
+        proc.expect("Use the IDE stop button or Ctrl-C to terminate")
     
     # Ignore first few Inputs
     inner_index = 0
@@ -33,55 +37,57 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
     proc.send("n")
     index = 0
     sent_slow = sent_normal = False
+    start_time = time.time()
     while True:
         output = proc.readline().decode('utf-8')
         # logging.debug(output)
         tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
         tmp = tmp[1].split("|")
         # logging.debug(tmp)
-        if sent_slow == True:
-            time.sleep(0.1)
         # Receive Data
-        if len(tmp) > 2:
-            current_x = tmp[0]
-            current_y = tmp[1]
-            current_z = tmp[2]
-            button_pressed = int(tmp[3])
-            if button_pressed == 1:
-                bp_flag.set()
-            elif button_pressed == 0:
-                bp_flag.clear()
-            # logging.debug(current_x+", "+current_y)
-            converted_x = twos_comp(int(current_x, 16),16)
-            converted_y = twos_comp(int(current_y, 16),16)
-            converted_z = twos_comp(int(current_z, 16),16)
+        current_x = tmp[0]
+        current_y = tmp[1]
+        current_z = tmp[2]
+        # button_pressed = int(tmp[3])
+        button_pressed =0 
+        if button_pressed == 1:
+            bp_flag.set()
+        elif button_pressed == 0:
+            bp_flag.clear()
+        # logging.debug(current_x+", "+current_y)
+        converted_x = twos_comp(int(current_x, 16),16)
+        converted_y = twos_comp(int(current_y, 16),16)
+        converted_z = twos_comp(int(current_z, 16),16)
+        current_time = time.time()
+        if current_time - start_time > 0.005:
+        # if True:
             logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
                 if start_queue_flag.is_set() and not end_flag.is_set():
                     logging.debug("Putting values in queue from fpga")
-                    x_data.put((-converted_x+250)/600*900)
-                    # x_data.append((-converted_x+250)/600*900)
-                    y_game_data.put((-converted_y+250)//30)
-                    if not y_mqtt_data.full():
-                        y_mqtt_data.put((-converted_y+250)//30)
+                    x_data.append((-converted_x+250)/600*900)
+                    y_game_data.append((-converted_y+250)//30)
+                    y_mqtt_data.append((-converted_y+250)//30)
             except:
                 pass  
+            start_time = current_time
         
-        # Send Data to change mode
-        if bombed_flag.is_set():
-            # Bomb received, change to slow mode
-            if not sent_slow:
-                logging.debug("Slowed")
-                proc.send("s")
-                sent_slow = True
-                sent_normal = False
-        else:
-            # back to normal
-            if not sent_normal:
-                logging.debug("Normal Speed")
-                proc.send("n")
-                sent_normal = True
-                sent_slow = False
+        if wsl:
+            # Send Data to change mode
+            if bombed_flag.is_set():
+                # Bomb received, change to slow mode
+                if not sent_slow:
+                    logging.debug("Slowed")
+                    proc.send("s")
+                    sent_slow = True
+                    sent_normal = False
+            else:
+                # back to normal
+                if not sent_normal:
+                    logging.debug("Normal Speed")
+                    proc.send("n")
+                    sent_normal = True
+                    sent_slow = False
 
         index += 1
     
@@ -136,9 +142,9 @@ def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_fl
     
 #     logging.debug("Closing UART")
 if __name__ == "__main__":
-    x_data = queue.Queue()
-    y_game_data = queue.Queue()
-    y_mqtt_data = queue.Queue()
+    x_data = deque()
+    y_game_data = deque()
+    y_mqtt_data = deque()
     start_flag = threading.Event()
     start_flag.clear()
     end_flag = threading.Event()
@@ -147,4 +153,4 @@ if __name__ == "__main__":
     bombed_flag.clear()
     bp_flag = threading.Event()
     bp_flag.clear()
-    uart_handler('o',x_data,y_game_data, y_mqtt_data,start_flag, end_flag, bp_flag, bombed_flag)
+    uart_handler('o',x_data,y_game_data, y_mqtt_data,start_flag, end_flag, bp_flag, bombed_flag, True)

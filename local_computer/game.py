@@ -3,6 +3,7 @@ import time
 import random
 import queue
 import logging
+from pygame.locals import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -67,7 +68,8 @@ class Game():
         self.red = (255,0,0)
         pygame.init()
         # Create Screen Display
-        self.screen = pygame.display.set_mode((self.display_width,self.display_height))
+        self.screen = pygame.display.set_mode((self.display_width,self.display_height), DOUBLEBUF)
+        self.screen.set_alpha(None)
         pygame.display.set_caption('Multiplayer Racing Game')
         self.icon = pygame.image.load('img/checkered-flag.png') #  icon from: Flaticon.com
         pygame.display.set_icon(self.icon)
@@ -89,6 +91,7 @@ class Game():
         self.ready = ready_object
         self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',30)
         self.text_font_small = pygame.font.Font('assets/Roboto-Regular.ttf',15)
+        self.largeText = pygame.font.Font('freesansbold.ttf',40)
 
         self.obstacle_starty = -self.display_height
         self.obstacle_startx = random.randrange(0, self.display_width)
@@ -102,6 +105,10 @@ class Game():
         self.leaderboardBg = pygame.image.load('img/leaderboard.png')
         self.bombnumber = 0
 
+        # Pre rendering text
+        self.slow_text = self.text_objects("You are slowed!", self.largeText, self.white)
+        self.crash_text = self.text_objects("You have crashed!", self.largeText, self.white)
+
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
@@ -113,16 +120,15 @@ class Game():
         self.screen.blit(TextSurf, TextRect)
 
     def queue_empty(self):
-        for _ in range(self.x_data.qsize()):
-            self.x_data.get()
-        for _ in range(self.y_data.qsize()):
-            self.y_data.get()
+        # for _ in range(self.x_data.qsize()):
+        self.x_data.clear()
+        # for _ in range(self.y_data.qsize()):
+        self.y_data.clear()
         logging.debug("Queues Emptied")
 
     def crash(self, obstacle_group, create_new):
         self.start_queue_flag.clear()        
-        largeText = pygame.font.Font('freesansbold.ttf',40)
-        TextSurf, TextRect = self.text_objects("You have crashed!", largeText, self.white)
+        TextSurf, TextRect = self.crash_text 
         TextRect.center = ((self.display_width/2),(self.display_height/2))
         self.screen.blit(TextSurf, TextRect)
 
@@ -323,8 +329,12 @@ class Game():
 
         while (self.gameStart):
             self.screen.blit(self.roadBg,(0,0))  
-            obstacle_speed = self.y_data.get()
-            logging.debug("Current x_data size: "+str(self.x_data.qsize())+". Current y_data size: "+str(self.y_data.qsize()))
+            try:
+                obstacle_speed = self.y_data.popleft()
+                logging.debug("Taking from y queue")
+            except IndexError:
+                logging.debug("Y queue empty")
+            logging.debug("Current x_data size: "+str(len(self.x_data))+". Current y_data size: "+str(len(self.y_data)))
             item_speed = obstacle_speed - 2
 
             
@@ -342,8 +352,11 @@ class Game():
                     quit()
 
             # x = self.x_data[-1]
-            x = self.x_data.get()
-            self.screen.fill(self.grey)
+            try:
+                x = self.x_data.popleft()
+                logging.debug("Taking from queue")
+            except IndexError:
+                logging.debug("Queue Empty")
             self.obstacle_starty += obstacle_speed
             item_starty += item_speed
 
@@ -381,8 +394,7 @@ class Game():
 
                 if (slowed):
                     if int(pygame.time.get_ticks() - start_slow_time)//1000 < 3:
-                        largeText = pygame.font.Font('freesansbold.ttf',40)
-                        TextSurf, TextRect = self.text_objects("You are slowed!", largeText, self.white)
+                        TextSurf, TextRect = self.slowed_text 
                         TextRect.center = ((self.display_width/2),(self.display_height/2))
                         self.screen.blit(TextSurf, TextRect)
                     else:
@@ -411,8 +423,8 @@ class Game():
                 item_startx = random.randrange(10,self.display_width-10)
 
             pygame.display.update()
-            self.clock.tick(120)
-            logging.debug("End")
+            logging.debug(self.clock.get_fps())
+            self.clock.tick(60)
 
         self.end_flag.set()
         self.end_screen()

@@ -37,12 +37,7 @@ class mqtt_client:
         self.rank_client.on_subscribe =self.on_sub_rank
         self.username = username
         self.password = password
-<<<<<<< HEAD
         self.encrypt = encrypt
-=======
-
-        # data thats being passed around
->>>>>>> 095d1c8bef77a5d7bea21ac63699689931669f8f
         self.accel_data = accel_data
         self.ready_flag = ready_flag
         self.start_flag = start_flag
@@ -88,13 +83,16 @@ class mqtt_client:
         time.sleep(2)
         send_count = 0
         while True:
+            time.sleep(0.1)
             if self.started:
                 # start sending speed data
-                if not self.accel_data.empty():
-                    sensor_data = self.accel_data.get()
-                    # logging.debug("Speed: "+str(sensor_data))
+                try:
+                    sensor_data = self.accel_data.popleft()
+                    logging.debug("Speed: "+str(sensor_data))
                     self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
-                
+                except IndexError:
+                    logging.debug("accel_data empty queue")
+
                 if self.end_flag.is_set():
                     # if game ended
                     self.started = False

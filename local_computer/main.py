@@ -2,7 +2,7 @@ from fpga_uart import uart_handler
 from mqtt_client import mqtt_client
 from game import Game 
 import threading
-from multiprocessing import Queue
+from collections import deque
 import argparse
 
 # global variable for accelerometer data
@@ -32,10 +32,10 @@ if __name__ == "__main__":
     print("Welcome {}".format(args.username))
     print("Attempting to connect to {} via {}".format(args.serverip, args.port))
     # Start Thread for FPGA UART Connection
-    x_data = Queue()
+    x_data = deque()
     # x_data = []
-    y_game_data = Queue()
-    y_mqtt_data = Queue()
+    y_game_data = deque()
+    y_mqtt_data = deque()
     #Ready Event => From game to mqtt
     ready_flag = threading.Event()
     #Start Event => mqtt to game and fpga thread
