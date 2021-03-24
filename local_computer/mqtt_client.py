@@ -53,21 +53,21 @@ class mqtt_client:
         self.leaderboard = leaderboard_object
         
     def connect(self):
-        try:            
+        try:           
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
             if self.encrypt:
-                self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-                self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-                self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-                self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+                self.accel_client.tls_set('ca.crt')
+                self.bomb_client.tls_set('ca.crt')
+                self.game_client.tls_set('ca.crt')
+                self.rank_client.tls_set('ca.crt')
                 self.accel_client.tls_insecure_set(True)
                 self.bomb_client.tls_insecure_set(True)
                 self.game_client.tls_insecure_set(True)
                 self.rank_client.tls_insecure_set(True)
 
             lwm = self.playername+":died"
-            self.game_client.will_set("info/game", lwm, qos=1, retain=False)
+            self.game_client.will_set("ifo/game", lwm, qos=1, retain=False)
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
             self.game_client.connect(self.brokerip, self.brokerport)

@@ -51,7 +51,7 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
         # logging.debug(output)
         tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
         tmp = tmp[1].split("|")
-        # logging.debug(tmp)
+        logging.debug(tmp)
         # Receive Data
         current_x = tmp[0]
         current_y = tmp[1]
@@ -64,12 +64,12 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
             bp_flag.clear()
         # logging.debug(current_x+", "+current_y)
         try:
-            converted_x = int(twos_comp(int(current_x, 16),16))
-            converted_y = int(twos_comp(int(current_y, 16),16))
-            converted_z = int(twos_comp(int(current_z, 16),16))
+            converted_x = int(twos_comp(int(current_x, 16),16))//4
+            converted_y = int(twos_comp(int(current_y, 16),16))//4
+            converted_z = int(twos_comp(int(current_z, 16),16))//4
         except:
             pass
-        # logging.debug("Converted vals" + str(converted_x) + ", "+ str(converted_y) +", "+ str(converted_z))
+        logging.debug("Converted vals: " + str(converted_x) + ", "+ str(converted_y) +", "+ str(converted_z))
 
         scaled_x = (-converted_x+250)/600*900
         if scaled_x < 80:
@@ -77,12 +77,12 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
         elif scaled_x > 700:
             scaled_x = 700
         scaled_y = (-converted_y+250)//30
-        if scaled_y < 0:
-            scaled_y = 0
+        if scaled_y < 3:
+            scaled_y = 3
         elif scaled_y > 10:
             scaled_y = 10
 
-        # logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
+        logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
         current_time = time.time()
         # if current_time - start_time > 0.0005:
         if True:

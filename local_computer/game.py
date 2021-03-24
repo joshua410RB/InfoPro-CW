@@ -476,6 +476,7 @@ class Game():
                     if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+80 <= mouse[1] <= self.display_height/2+120: 
                         self.gameExit = True
                         self.start_queue_flag.clear()
+        config.dist_data = 0
         self.gameExit = False
         self.gameStart = False
         self.end_flag.clear()
