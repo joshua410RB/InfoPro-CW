@@ -110,6 +110,37 @@ class Game():
         self.slow_text = self.text_objects("You are slowed!", self.largeText, self.white)
         self.crash_text = self.text_objects("You have crashed!", self.largeText, self.white)
 
+        #### START SCREEN features rendering ####
+
+        # Multiplayer mode button
+        self.start_white_m = pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
+        self.start_grey_m = pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
+        self.start_m_text = self.text_objects("Multiplayer", button_text_font, self.black)
+
+        # Singleplayer mode
+        self.start_white_s = pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
+        self.start_grey_s = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
+        self.start_s_text = self.text_objects("Single Player", button_text_font, self.black)
+
+
+        #### MULTIPLAYER SCREEN ####
+        # Ready
+        self.multiplayer_title_text = self.text_objects("Multiplayer Mode", self.text_font, self.white)
+        self.ready_text = self.text_objects("Ready", button_text_font, self.black)
+        self.ready_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
+        self.ready_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
+
+        #### LOBBY SCREEN ####
+        self.lobby_text = self.text_objects("In Lobby", self.text_font, self.white)
+
+        #### LEADERBOARD SCREEN ####
+        self.leaderboard_text = self.text_objects("Leaderboard", self.text_font_small, self.white)
+
+        #### ENDSCREEN ####
+        self.exit_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
+        self.exit_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
+        self.exit_text = self.text_objects("Exit", button_text_font, self.black)       
+
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
@@ -158,28 +189,28 @@ class Game():
         while not self.gameStart:            
             self.screen.fill(self.white)
             self.screen.blit(self.Bg1,(0,0))
-            start_text, start_rect = self.text_objects("Racing Game", self.text_font, self.black)
-            start_rect.center = ((self.display_width/2),(self.display_height/2-50))
+           # start_text, start_rect = self.text_objects("Racing Game", self.text_font, self.black)
+           # start_rect.center = ((self.display_width/2),(self.display_height/2-50))
     
             self.screen.blit(start_text, start_rect)
 
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2+20 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
+                self.start_white_m
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
+                self.start_grey_m
 
             if self.display_width/2-120 <= mouse[0] <= self.display_width/2-20 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
+                self.start_white_s
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
+                self.start_grey_s
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            mult_button_text, mult_button_rect = self.text_objects("Multiplayer", button_text_font, self.black)
+            mult_button_text, mult_button_rect = self.start_m_text
             mult_button_rect.center = ((self.display_width/2+70),(self.display_height/2))
             self.screen.blit(mult_button_text, mult_button_rect)
             
-            single_button_text, single_button_rect = self.text_objects("Single Player", button_text_font, self.black)
+            single_button_text, single_button_rect = self.start_s_text
             single_button_rect.center = ((self.display_width/2-70),(self.display_height/2))
             self.screen.blit(single_button_text, single_button_rect)
             pygame.display.update()
@@ -204,18 +235,18 @@ class Game():
         # Ready Button Screen
         while not self.ready_flag.is_set():            
             self.screen.blit(self.Bg2, (0,0))
-            start_text, start_rect = self.text_objects("Multiplayer Mode", self.text_font, self.white)
+            start_text, start_rect = self.multiplayer_title_text
             start_rect.center = ((self.display_width/2),(self.display_height/2-80))
             self.screen.blit(start_text, start_rect)
             #self.update_readystatus(self.display_width/2, self.display_height/2)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
+                self.ready_button_w
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
+                self.ready_button_g
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            startbutton_text, startbutton_rect = self.text_objects("Ready", button_text_font, self.black)
+            startbutton_text, startbutton_rect = self.ready_text
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2-20))
             self.screen.blit(startbutton_text, startbutton_rect)
             pygame.display.update()
@@ -238,7 +269,6 @@ class Game():
             #self.screen.blit(waiting_text, waiting_rect)
             self.update_readystatus(self.display_width/2, self.display_height/2+120)
             # add players ready status
-
             
             pygame.display.update()
             for event in pygame.event.get():
@@ -270,7 +300,7 @@ class Game():
         self.race_screen("mult")
 
     def update_readystatus(self, width_margin, height_margin):
-        lb_title, lb_rect = self.text_objects("In Lobby", self.text_font, self.white)
+        lb_title, lb_rect = self.lobby_text
         lb_rect.center = ((self.display_width-width_margin),(self.display_height-height_margin))
         self.screen.blit(lb_title, lb_rect)
         margin = 40 
@@ -289,7 +319,7 @@ class Game():
             margin += 40
 
     def update_leaderboard(self, width_pos, height_pos):
-        lb_title, lb_rect = self.text_objects("Leaderboard", self.text_font_small, self.white)
+        lb_title, lb_rect = self.leaderboard_text
         lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos))
         self.screen.blit(lb_title, lb_rect)
         position = 1
@@ -437,9 +467,9 @@ class Game():
             self.update_leaderboard(0.5,0.25)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+80 <= mouse[1] <= self.display_height/2+120:
-                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
+                self.exit_button_w
             else:
-                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
+                self.exit_button_g
 
             button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.text_objects("Exit", button_text_font, self.black)
