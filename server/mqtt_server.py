@@ -44,11 +44,11 @@ class Game:
         self.db = create_connection('db/racegame.db')
 
         # threads and starting processes
-        self.mqtt_thread = threading.Thread(target=self.start_server_handler)
-        self.join_thread = threading.Thread(target=self.handle_join)
-        self.leaderboard_thread = threading.Thread(target=self.handle_leaderboard)
-        self.bomb_thread = threading.Thread(target=self.handle_bomb)
-        self.start_thread = threading.Thread(target=self.handle_start)
+        self.mqtt_thread = threading.Thread(target=self.start_server_handlerl, daemon=True)
+        self.join_thread = threading.Thread(target=self.handle_join, daemon=True)
+        self.leaderboard_thread = threading.Thread(target=self.handle_leaderboard, daemon=True)
+        self.bomb_thread = threading.Thread(target=self.handle_bomb, daemon=True)
+        self.start_thread = threading.Thread(target=self.handle_start, daemon=True)
 
     def connect(self):
         try:
@@ -64,12 +64,6 @@ class Game:
             exit(1)
 
     def threadstart(self):
-        self.mqtt_thread.daemon = True
-        self.join_thread.daemon = True
-        self.bomb_thread.daemon = True
-        self.leaderboard_thread.daemon  = True
-        self.start_thread.daemon = True
-        
         self.mqtt_thread.start()
         self.join_thread.start()
         self.bomb_thread.start()
@@ -92,7 +86,7 @@ class Game:
     def on_message_bomb(self, client, userdata, msg):
         name, action = str(msg.payload.decode("utf-8")).split(":")
         if action == "sendbomb":
-            logging.debug(name+"wants to bomb")
+            logging.debug(name+" wants to bomb")
             self.bombs.put(name)
 
     # game: start, ready, end
@@ -117,7 +111,7 @@ class Game:
                 except:
                     logging.debug(name+" hasn't joined yet, please join first!")
             elif action == 'end':
-                logging.debug(name+" ended")
+                logging.debug(name+" ended race")
                 self.players[name].status = 2
             elif action == 'died':
                 logging.debug(name+" died")
@@ -221,13 +215,15 @@ class Game:
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
                 if self.final_leaderboard.is_set():
                     logging.debug("final leaderboard")
-                    # add to sql database
-                    
+                    # add to sql database and get alltime highscore
+                    self.add_to_db()
+                    highscore_dict = self.get_highscore()
                     self.rank_server.publish("info/leaderboard/final", "final", qos=1)
+                    highscore_json = json.dumps(highscore_dict)
+                    self.rank_server.publish("info/leaderboard/highscore", highscore_json, qos=1)
                     self.final_leaderboard.clear()  
                     for _, player in players_dict.items():
                         player.dist = 0
-                        player.speed = 0
                         player.status = 0
                     logging.debug("Game Data Erased")
 
@@ -243,7 +239,6 @@ class Game:
             del self.players[name]
             del self.ready_data[name]
             del self.leaderboard[name]
-            del self.final_leaderboard[name]
             logging.debug("deleted all instances of "+name)
         except:
             logging.debug("deleted all instances of "+name)
@@ -256,7 +251,27 @@ class Game:
         while True:
             pass
 
-        
+    def add_to_db(self):
+        # create game record assume leaderboard sorted alr
+        leaderboard_copy = self.leaderboard.copy()
+        res = []
+        for name, _ in leaderboard_copy:
+            res.append(name)
+
+        while(len(res) < 6):
+            res.append(None)
+
+        gameid = create_game_record(self.db, res)
+        # create dist record
+        for name, dist in leaderboard_copy:
+            create_distance_record(self.db, (name, int(dist), gameid))
+
+    def get_highscore(self):
+        # highscore is a list of lists
+        highscore = select_highscore(self.db)
+        highscore_dict = { i: (item[0], item[1]) for i, item in enumerate(highscore)}
+        return highscore_dict
+
 class Player:
     def __init__(self, ip, port, playername):
         self.brokerip = ip
@@ -270,11 +285,8 @@ class Player:
         self.username = "siyu"
         self.password= "password"
 
-        # player data
+        ## player data for current game 
         self.dist = 0
-        # self.prev_speed = 0
-        # self.speed = 0
-        # self.speedq = Queue()
         self.status = 0 
         # 0 = not ready, 1 = ready, 2 = ended
         self.disconnect = False

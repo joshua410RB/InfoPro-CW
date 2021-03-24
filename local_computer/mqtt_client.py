@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
 class mqtt_client:
     def __init__(self, ip, port, username, password, encrypt, 
                  accel_data, ready_flag, start_flag, final_flag, 
-                 leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag):
+                 leaderboard_object, highscore_object, ready_object, end_flag, send_bomb_flag, bombed_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -51,6 +51,7 @@ class mqtt_client:
         # game details
         self.started = False
         self.leaderboard = leaderboard_object
+        self.highscore = highscore_object
         
     def connect(self):
         try:           
@@ -187,12 +188,18 @@ class mqtt_client:
             logging.debug("Rank connected!")
             client.subscribe("info/leaderboard", qos = 1)
             client.subscribe("info/leaderboard/final", qos = 1)
+            client.subscribe("info/leaderboard/highscore", qos = 1)
         else:
             logging.debug("Bad connection", )
 
     def on_message_rank(self, client, obj, msg):
         if msg.topic == "info/leaderboard/final":
             self.final_flag.set()
+        elif msg.topic == "info/leaderboard/highscore":
+            data = str(msg.payload.decode("utf-8", "ignore"))
+            # logging.debug("client leaderboard: "+data)
+            data = json.loads(data) # decode json data
+            self.highscore.update(data)
         else:
             data = str(msg.payload.decode("utf-8", "ignore"))
             # logging.debug("client leaderboard: "+data)

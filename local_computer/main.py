@@ -49,6 +49,8 @@ if __name__ == "__main__":
     ready_object = {}
     #Leaderboard Object => mqtt to game
     leaderboard_object = {}
+    #Highscore Object => mqtt to game
+    highscore_object = {}
     #End Game Event => Game to FPGA and MQTT
     end_flag = threading.Event()
     end_flag.clear()
@@ -66,14 +68,14 @@ if __name__ == "__main__":
     # Start Thread for MQTT Client Start Client     
     mqtt = mqtt_client(args.serverip, int(args.port), args.username, args.password, args.encrypt,
                         y_mqtt_data, ready_flag, start_flag, final_flag, 
-                        leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag)
+                        leaderboard_object, highscore_object, ready_object, end_flag, send_bomb_flag, bombed_flag)
     mqtt.connect()
     mqtt_thread = threading.Thread(name = "mqtt-thread", target=mqtt.start_client)    
     
     # Start Thread for game
     new_game = Game(x_data_1, y_game_data_1, 
                     ready_flag, start_flag, start_queue_flag, final_flag, 
-                    leaderboard_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag)
+                    leaderboard_object, highscore_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag)
     
     fpga_thread.daemon = True
     mqtt_thread.daemon = True

@@ -57,7 +57,7 @@ class Item(pygame.sprite.Sprite):
 class Game():
     def __init__(self, x_data1, y_data1, 
                  ready_flag, start_flag, start_queue_flag, final_flag, 
-                 leaderboard_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag,
+                 leaderboard_object, highscore_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag,
                  display_width = 800, display_height = 600):
         self.display_width = display_width
         self.display_height = display_height 
@@ -89,6 +89,7 @@ class Game():
         self.gameStart = False
         self.gameExit = False
         self.leaderboard = leaderboard_object
+        self.highscore = highscore_object
         self.ready = ready_object
         self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',30)
         self.text_font_small = pygame.font.Font('assets/Roboto-Regular.ttf',15)
