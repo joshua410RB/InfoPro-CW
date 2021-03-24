@@ -87,17 +87,16 @@ class mqtt_client:
         time.sleep(2)
         send_count = 0
         while True:
-            time.sleep(0.1)
             if self.started:
-                time.sleep(0.5)
+                time.sleep(0.1)
                 # start sending speed data
-                try:
+                # try:
                     # sensor_data = self.accel_data.popleft()
                     # logging.debug("Speed: "+str(sensor_data))
-                    logging.debug("Dist: "+str(config.dist_data))
-                    self.accel_client.publish("info/dist/"+self.playername, config.dist_data, qos=1)
-                except IndexError:
-                    logging.debug("accel_data empty queue")
+                logging.debug("Dist: "+str(config.dist_data))
+                self.accel_client.publish("info/dist/"+self.playername, int(config.dist_data), qos=1)
+                # except IndexError:
+                    # logging.debug("accel_data empty queue")
 
                 if self.end_flag.is_set():
                     # if game ended

@@ -63,23 +63,41 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
         elif button_pressed == 0:
             bp_flag.clear()
         # logging.debug(current_x+", "+current_y)
-        converted_x = twos_comp(int(current_x, 16),16)
-        converted_y = twos_comp(int(current_y, 16),16)
-        converted_z = twos_comp(int(current_z, 16),16)
+        try:
+            converted_x = int(twos_comp(int(current_x, 16),16))
+            converted_y = int(twos_comp(int(current_y, 16),16))
+            converted_z = int(twos_comp(int(current_z, 16),16))
+        except:
+            pass
+        # logging.debug("Converted vals" + str(converted_x) + ", "+ str(converted_y) +", "+ str(converted_z))
+
+        scaled_x = (-converted_x+250)/600*900
+        if scaled_x < 80:
+            scaled_x = 80
+        elif scaled_x > 700:
+            scaled_x = 700
+        scaled_y = (-converted_y+250)//30
+        if scaled_y < 0:
+            scaled_y = 0
+        elif scaled_y > 10:
+            scaled_y = 10
+
+        # logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
         current_time = time.time()
         # if current_time - start_time > 0.0005:
         if True:
-            # logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250)+", "+str(-converted_z+250)+", "+str(button_pressed))
             try:
                 if start_queue_flag.is_set() and not end_flag.is_set():
-                    logging.debug("Putting values in queue from fpga")
                     # x_data.append((-converted_x+250)/600*900)
-                    config.x_data=((-converted_x+250)/600*900)
                     # y_game_data.append((-converted_y+250)//30)
-                    config.y_game_data = ((-converted_y+250)//30)
-                    y_mqtt_data.append((-converted_y+250)//30)
-                    config.dist_data = calcDist(config.dist_data, prevspeed, ((-converted_y+250)//30))
-                    prevspeed = ((-converted_y+250)//30)
+                    
+                    config.x_data=scaled_x 
+                    config.y_game_data = scaled_y
+                    # y_mqtt_data.append((-converted_y+250)//30)
+
+                    config.dist_data = calcDist(config.dist_data, prevspeed, scaled_y)
+                    # logging.debug(config.dist_data)
+                    prevspeed = scaled_y
             except:
                 pass  
             start_time = current_time
