@@ -2,10 +2,7 @@ from fpga_uart import uart_handler
 from mqtt_client import mqtt_client
 from game import Game 
 import threading
-try: 
-    import queue
-except ImportError:
-    import Queue as queue
+from multiprocessing import Queue
 import argparse
 
 # global variable for accelerometer data
@@ -27,17 +24,18 @@ if __name__ == "__main__":
                         help='input your game username')
     parser.add_argument('--password', 
                         help='input your game password')
-
+    parser.add_argument('-e', '--encrypt', action='store_true',
+                        help='Use encryption using TLS')
+    parser.add_argument('-w', '--window', action='store_true',
+                        help='Playing on WSL')
     args = parser.parse_args()
-    print(args.serverip)
-    print(args.port)
-    print(args.username)
-    print(args.password)
+    print("Welcome {}".format(args.username))
+    print("Attempting to connect to {} via {}".format(args.serverip, args.port))
     # Start Thread for FPGA UART Connection
-    x_data = queue.Queue()
+    x_data = Queue()
     # x_data = []
-    y_game_data = queue.Queue()
-    y_mqtt_data = queue.Queue()
+    y_game_data = Queue()
+    y_mqtt_data = Queue()
     #Ready Event => From game to mqtt
     ready_flag = threading.Event()
     #Start Event => mqtt to game and fpga thread
@@ -52,10 +50,10 @@ if __name__ == "__main__":
     #End Game Event => Game to FPGA and MQTT
     end_flag = threading.Event()
 
-    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_queue_flag, end_flag))
+    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_queue_flag, end_flag, args.windows))
 
     # Start Thread for MQTT Client Start Client     
-    mqtt = mqtt_client(args.serverip, int(args.port), args.username, args.password, 
+    mqtt = mqtt_client(args.serverip, int(args.port), args.username, args.password, args.encrypt,
                         y_mqtt_data, ready_flag, start_flag, final_flag, 
                         leaderboard_object, ready_object, end_flag)
     mqtt.connect()

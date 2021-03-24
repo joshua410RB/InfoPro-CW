@@ -330,7 +330,6 @@ class Game():
                 #         obstacle_speed -= 3
             # x = self.x_data[-1]
             x = self.x_data.get()
-            # self.x_data.task_done()
             self.screen.fill(self.grey)
             self.obstacle_starty += obstacle_speed
             item_starty += item_speed

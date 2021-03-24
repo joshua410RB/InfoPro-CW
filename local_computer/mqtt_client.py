@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username, password, 
+    def __init__(self, ip, port, username, password, encrypt, 
                  accel_data, ready_flag, start_flag, final_flag, 
                  leaderboard_object, ready_object, end_flag):
         self.brokerip = ip
@@ -36,6 +36,7 @@ class mqtt_client:
         self.rank_client.on_subscribe =self.on_sub_rank
         self.username = username
         self.password = password
+        self.encrypt = encrypt
         self.accel_data = accel_data
         self.ready_flag = ready_flag
         self.start_flag = start_flag
@@ -52,14 +53,15 @@ class mqtt_client:
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
-            self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-            self.accel_client.tls_insecure_set(True)
-            self.bomb_client.tls_insecure_set(True)
-            self.game_client.tls_insecure_set(True)
-            self.rank_client.tls_insecure_set(True)
+            if self.encrypt:
+                self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+                self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+                self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+                self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+                self.accel_client.tls_insecure_set(True)
+                self.bomb_client.tls_insecure_set(True)
+                self.game_client.tls_insecure_set(True)
+                self.rank_client.tls_insecure_set(True)
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
             self.game_client.connect(self.brokerip, self.brokerport)
