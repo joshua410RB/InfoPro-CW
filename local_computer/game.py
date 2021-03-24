@@ -115,18 +115,18 @@ class Game():
         # Multiplayer mode button
         self.start_white_m = pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
         self.start_grey_m = pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
-        self.start_m_text = self.text_objects("Multiplayer", button_text_font, self.black)
+        self.start_m_text = self.text_objects("Multiplayer", self.text_font_small, self.black)
 
         # Singleplayer mode
         self.start_white_s = pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
         self.start_grey_s = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
-        self.start_s_text = self.text_objects("Single Player", button_text_font, self.black)
+        self.start_s_text = self.text_objects("Single Player", self.text_font_small, self.black)
 
 
         #### MULTIPLAYER SCREEN ####
         # Ready
         self.multiplayer_title_text = self.text_objects("Multiplayer Mode", self.text_font, self.white)
-        self.ready_text = self.text_objects("Ready", button_text_font, self.black)
+        self.ready_text = self.text_objects("Ready", self.text_font_small, self.black)
         self.ready_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
         self.ready_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
 
@@ -139,7 +139,7 @@ class Game():
         #### ENDSCREEN ####
         self.exit_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
         self.exit_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
-        self.exit_text = self.text_objects("Exit", button_text_font, self.black)       
+        self.exit_text = self.text_objects("Exit", self.text_font_small, self.black)       
 
     def text_objects(self, text, font, color):
         textSurface = font.render(text, True, color)
@@ -205,7 +205,6 @@ class Game():
             else:
                 self.start_grey_s
 
-            button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             mult_button_text, mult_button_rect = self.start_m_text
             mult_button_rect.center = ((self.display_width/2+70),(self.display_height/2))
             self.screen.blit(mult_button_text, mult_button_rect)
@@ -245,7 +244,6 @@ class Game():
             else:
                 self.ready_button_g
 
-            button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
             startbutton_text, startbutton_rect = self.ready_text
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2-20))
             self.screen.blit(startbutton_text, startbutton_rect)
@@ -471,8 +469,7 @@ class Game():
             else:
                 self.exit_button_g
 
-            button_text_font = pygame.font.Font('assets/Roboto-Regular.ttf',15)
-            startbutton_text, startbutton_rect = self.text_objects("Exit", button_text_font, self.black)
+            startbutton_text, startbutton_rect = self.text_objects("Exit", self.text_font_small, self.black)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+100))
             self.screen.blit(startbutton_text, startbutton_rect)
 

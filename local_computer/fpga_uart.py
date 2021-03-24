@@ -12,6 +12,10 @@ logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
 
+# assumes linear acceleration between speed datas
+def calcDist(dist, prevspeed, newspeed):
+    dist += 1/2*(newspeed + prevspeed)*0.1 # timestep
+    return dist
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val"""
@@ -35,6 +39,8 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
         inner_index += 1
         proc.readline()
 
+    # calcualting dist variables
+    prevspeed = 0
     # Start off with Normal Mode
     proc.send("n")
     index = 0
@@ -72,6 +78,8 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
                     # y_game_data.append((-converted_y+250)//30)
                     config.y_game_data = ((-converted_y+250)//30)
                     y_mqtt_data.append((-converted_y+250)//30)
+                    config.dist_data = calcDist(config.dist_data, prevspeed, ((-converted_y+250)//30))
+                    prevspeed = ((-converted_y+250)//30)
             except:
                 pass  
             start_time = current_time

@@ -225,20 +225,17 @@ class Game:
             logging.debug("moving to dead people list")
             self.players[name].disconnect = True
             time.sleep(0.1)
-            self.players[name].speedthread.join()
+            # self.players[name].speedthread.join()
             self.players[name].startthread.join()
             player = self.players[name]
             self.dead_people[name] = player
             del self.players[name]
-            logging.debug("deleting "+name+" ready status")
             del self.ready_data[name]
-            logging.debug("deleting "+name+" in leaderboard")
             del self.leaderboard[name]
-            logging.debug("deleting "+name+" in final leaderboard")
             del self.final_leaderboard[name]
             logging.debug("deleted all instances of "+name)
         except:
-            logging.debug(name+" some stuff cannot be deleted")
+            logging.debug("deleted all instances of "+name)
 
     def start_server_handler(self):
         logging.debug("Server Started")
@@ -264,15 +261,15 @@ class Player:
 
         # player data
         self.dist = 0
-        self.prev_speed = 0
-        self.speed = 0
-        self.speedq = Queue()
+        # self.prev_speed = 0
+        # self.speed = 0
+        # self.speedq = Queue()
         self.status = 0 
         # 0 = not ready, 1 = ready, 2 = ended
         self.disconnect = False
         
         # threads and starting processes
-        self.speedthread = threading.Thread(target=self.handle_speed, daemon=True)
+        # self.speedthread = threading.Thread(target=self.handle_speed, daemon=True)
         self.startthread = threading.Thread(target=self.start, daemon=True)
         self.connect()
         self.threadstart()
@@ -296,12 +293,8 @@ class Player:
         logging.debug("start thread ended")
     
     def threadstart(self):
-        self.speedthread.start()
+        # self.speedthread.start()
         self.startthread.start()
-
-        # # killing the threads?
-        # self.speedthread.join()
-        # self.startthread.join()
 
     # MQTT Callbacks    
     def on_subscribe_accel(self, client, userdata, mid, granted_qos):
@@ -309,36 +302,36 @@ class Player:
 
     def on_message_accel(self, client, userdata, msg):
         # logging.debug(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))  
-        speed = int(msg.payload.decode("utf-8"))
+        dist = int(msg.payload.decode("utf-8"))
         if self.status == 1:
-            self.speedq.put(speed)
+            self.dist = dist
         
     def on_connect_accel(self, client, obj, flags, rc):
         if rc == 0:
             logging.debug("Accel connected")
-            client.subscribe("info/speed/"+self.playername, qos = 1)
+            client.subscribe("info/dist/"+self.playername, qos = 1)
         else:
             logging.debug("Bad connection")
     
-    # Handlers 
-    def handle_speed(self):
-        while True:
-            while not self.speedq.empty():
-                if self.status == 0 or self.status == 2:
-                    continue
-                speed = self.speedq.get()
-                self.calcDist(int(speed))
+    # # Handlers 
+    # def handle_dist(self):
+    #     while True:
+    #         while not self.distq.empty():
+    #             if self.status == 0 or self.status == 2:
+    #                 continue
+    #             dist = self.distq.get()
+    #             # self.calcDist(int(speed))
             
-            if(self.disconnect):
-                break
+    #         if(self.disconnect):
+    #             break
         
-        logging.debug("speed thread ended")
+    #     logging.debug("speed thread ended")
 
-    # assumes linear acceleration between speed datas
-    def calcDist(self, newspeed):
-        self.prev_speed = self.speed 
-        self.speed = newspeed
-        self.dist += 1/2*(self.speed + self.prev_speed)*0.1 # timestep
+    # # assumes linear acceleration between speed datas
+    # def calcDist(self, newspeed):
+    #     self.prev_speed = self.speed 
+    #     self.speed = newspeed
+    #     self.dist += 1/2*(self.speed + self.prev_speed)*0.1 # timestep
 
 def main():
     game = Game("0.0.0.0", 1883)

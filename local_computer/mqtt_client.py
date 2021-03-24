@@ -6,6 +6,7 @@ from random import randint
 import subprocess
 import json
 import ssl
+import config
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -88,11 +89,13 @@ class mqtt_client:
         while True:
             time.sleep(0.1)
             if self.started:
+                time.sleep(0.5)
                 # start sending speed data
                 try:
-                    sensor_data = self.accel_data.popleft()
-                    logging.debug("Speed: "+str(sensor_data))
-                    self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
+                    # sensor_data = self.accel_data.popleft()
+                    # logging.debug("Speed: "+str(sensor_data))
+                    logging.debug("Dist: "+str(config.dist_data))
+                    self.accel_client.publish("info/dist/"+self.playername, config.dist_data, qos=1)
                 except IndexError:
                     logging.debug("accel_data empty queue")
 
