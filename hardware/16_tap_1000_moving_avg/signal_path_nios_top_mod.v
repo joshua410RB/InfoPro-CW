@@ -94,10 +94,10 @@ module signal_path_nios_top_mod(
 	assign HEX4 = 255;
 	assign HEX5 = 255;
 
-	hex_to_7seg disp0(HEX0, y_read[3:0]);
-   	hex_to_7seg disp1(HEX1, y_read[7:4]);
-	hex_to_7seg disp2(HEX2, y_read[11:8]);
-	hex_to_7seg disp3(HEX3, y_read[15:12]);
+	// hex_to_7seg disp0(HEX0, y_read[3:0]);
+   	// hex_to_7seg disp1(HEX1, y_read[7:4]);
+	// hex_to_7seg disp2(HEX2, y_read[11:8]);
+	// hex_to_7seg disp3(HEX3, y_read[15:12]);
 
     always_comb begin
 		LEDR[1:0] = y_bank;
