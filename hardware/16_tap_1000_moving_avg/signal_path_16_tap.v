@@ -23,7 +23,7 @@ module signal_path_16_tap(
     input logic spi_miso,
     output logic spi_cs
 );
-    parameter CLOCK_DIV = 250000 - 1;   // originally 500000
+    parameter CLOCK_DIV = 500000 - 1;   // originally 500000
 
     typedef enum logic[3:0] {
         IDLE = 4'd0,
