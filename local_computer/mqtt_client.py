@@ -53,21 +53,21 @@ class mqtt_client:
         self.leaderboard = leaderboard_object
         
     def connect(self):
-        try:            
+        try:           
             # self.accel_client.username_pw_set(self.username, self.password)
             # self.bomb_client.username_pw_set(self.username, self.password)
             if self.encrypt:
-                self.accel_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-                self.bomb_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-                self.game_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
-                self.rank_client.tls_set('/mnt/c/Users/tansi/Documents/Imperial_College_London/Info_Processing/InfoPro-CW/local_computer/ca.crt')
+                self.accel_client.tls_set('ca.crt')
+                self.bomb_client.tls_set('ca.crt')
+                self.game_client.tls_set('ca.crt')
+                self.rank_client.tls_set('ca.crt')
                 self.accel_client.tls_insecure_set(True)
                 self.bomb_client.tls_insecure_set(True)
                 self.game_client.tls_insecure_set(True)
                 self.rank_client.tls_insecure_set(True)
 
             lwm = self.playername+":died"
-            self.game_client.will_set("info/game", lwm, qos=1, retain=False)
+            self.game_client.will_set("ifo/game", lwm, qos=1, retain=False)
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
             self.game_client.connect(self.brokerip, self.brokerport)
@@ -87,17 +87,16 @@ class mqtt_client:
         time.sleep(2)
         send_count = 0
         while True:
-            time.sleep(0.1)
             if self.started:
-                time.sleep(0.5)
+                time.sleep(0.1)
                 # start sending speed data
-                try:
+                # try:
                     # sensor_data = self.accel_data.popleft()
                     # logging.debug("Speed: "+str(sensor_data))
-                    logging.debug("Dist: "+str(config.dist_data))
-                    self.accel_client.publish("info/dist/"+self.playername, config.dist_data, qos=1)
-                except IndexError:
-                    logging.debug("accel_data empty queue")
+                logging.debug("Dist: "+str(config.dist_data))
+                self.accel_client.publish("info/dist/"+self.playername, int(config.dist_data), qos=1)
+                # except IndexError:
+                    # logging.debug("accel_data empty queue")
 
                 if self.end_flag.is_set():
                     # if game ended

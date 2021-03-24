@@ -61,14 +61,14 @@ if __name__ == "__main__":
     bombed_flag = threading.Event()
     bombed_flag.clear()
 
-    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data_1,y_game_data_1, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, args.wsl))
+    fpga_thread = threading.Thread(name = "fpga-thread",target=uart_handler, args=('o',x_data_1,y_game_data_1, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, args.wsl))
 
     # Start Thread for MQTT Client Start Client     
     mqtt = mqtt_client(args.serverip, int(args.port), args.username, args.password, args.encrypt,
                         y_mqtt_data, ready_flag, start_flag, final_flag, 
                         leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag)
     mqtt.connect()
-    mqtt_thread = threading.Thread(target=mqtt.start_client)    
+    mqtt_thread = threading.Thread(name = "mqtt-thread", target=mqtt.start_client)    
     
     # Start Thread for game
     new_game = Game(x_data_1, y_game_data_1, 
