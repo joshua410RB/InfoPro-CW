@@ -22,7 +22,6 @@ def create_table(conn, create_table_sql):
 
 # Insert Data to Distance Table
 def create_distance_record(conn, user_record):
-    user_record.append(datetime.utcnow().strftime("%d-%m-%y"))
     sql_query = """INSERT INTO distance_record (username, distance, game_id)
                    VALUES(?,?,?)"""
     cur = conn.cursor()
@@ -32,6 +31,7 @@ def create_distance_record(conn, user_record):
 
 # Insert Data to LeaderBoard Table
 def create_game_record(conn, game_record):
+    game_record.append(datetime.utcnow().strftime("%d-%m-%y"))
     sql_query = """INSERT into position_history(first, second, third, fourth, fifth, sixth, date) 
                    VALUES(?,?,?,?,?,?,?)"""
     cur = conn.cursor()

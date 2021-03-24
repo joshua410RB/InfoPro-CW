@@ -199,7 +199,9 @@ class mqtt_client:
             data = json.loads(data) # decode json data
             # sort by position
             sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
-            sorted_dict = {k: v for k,v in sorted_tuples}
+            sorted_dict = {}
+            for i in range(len(sorted_tuples)):
+                sorted_dict[i] = sorted_tuples[i]
             self.leaderboard.update(sorted_dict)
 
     # handlers
