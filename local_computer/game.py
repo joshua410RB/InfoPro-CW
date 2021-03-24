@@ -354,7 +354,7 @@ class Game():
         while (self.gameStart):
             self.screen.blit(self.roadBg,(0,0))  
             obstacle_speed = config.y_game_data
-            item_speed = obstacle_speed - 2
+            item_speed = obstacle_speed if (obstacle_speed < 2) else obstacle_speed - 2
             
             if (int(pygame.time.get_ticks() - start_time)//1000 > 30):
                 break
@@ -437,6 +437,7 @@ class Game():
                 item_startx = random.randrange(10,self.display_width-10)
 
             pygame.display.update()
+            logging.debug("Current FPS: "+ str(self.clock.get_fps()))
             self.clock.tick(120)
 
         self.end_flag.set()
