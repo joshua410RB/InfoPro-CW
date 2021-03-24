@@ -35,8 +35,8 @@ class Game:
         self.final_leaderboard.clear()
         self.players = {}
         self.leaderboard = {}
+        self.bombs = Queue() # list of names where the bomb comes from
         self.joining = Queue()
-        self.bombcount = 0
         self.ready_data = {}
 
         # threads and starting processes
@@ -92,9 +92,10 @@ class Game:
         # logging.debug("Publishing on Bomb Topic: " + str(mid))
 
     def on_message_bomb(self, client, userdata, msg):
-        if str(msg.payload.decode("utf-8")) == "sendback":
-            self.bombcount += 1
-            logging.debug("got back bomb")
+        name, action = str(msg.payload.decode("utf-8")).split(":")
+        if action == "sendbomb":
+            logging.debug(name+"wants to bomb")
+            self.bombs.put(name)
 
     # game: start, ready, end
     def on_connect_game(self, client, obj, flags, rc):
@@ -117,8 +118,9 @@ class Game:
             elif action == 'end':
                 logging.debug(name+" ended")
                 self.players[name].status = 2
-                with self.players[name].speedq.mutex:
-                    self.players[name].speedq.queue.clear()
+            elif action == 'died':
+                logging.debug(name+" died")
+                self.handle_disconnect(name)
 
     # rank: leaderboards
     def on_connect_rank(self, client, obj, flags, rc):
@@ -143,15 +145,13 @@ class Game:
     def handle_start(self):
         while True:
             if self.started:
-                time.sleep(0.01)
+                time.sleep(0.1)
                 # if all players end then game ends
                 if all(player.status == 2 for (_, player) in self.players.items()):
                     self.started = False
                     logging.debug("game ended!")
 
                     # send last leaderboard to everyone
-                    # reset everyone's status to not ready so we can play again
-                    # self.handle_leaderboard(True)
                     self.final_leaderboard.set()
 
             else:
@@ -177,23 +177,37 @@ class Game:
 
     def handle_bomb(self):
         while True:
-            time.sleep(0.5)
-            if self.bombcount == 0 and self.started:
-                # send out a bomb!!! and rng who heheh
-                self.bombcount -= 1
-                name, _ = random.choice(list(self.players.items()))
-                logging.debug("sent bomb to "+name)
-                self.bomb_server.publish("info/bomb", name)
+            time.sleep(0.1)
+            if self.started and not self.bombs.empty():
+                sender = self.bombs.get()
+                sendee = sender
+                randomise = False
+                # trying to send to the person ahead of you
+                # if first place then random send
+                for i, name in enumerate(self.leaderboard):                    
+                    if name == sender and i != 0:
+                        break
+                    elif name == sender and i == 0:
+                        randomise = True
+                        break
+                    sendee = name
+
+                if randomise:
+                    sendee, _ = random.choice(list(self.players.items()))
+
+                logging.debug("sent bomb to "+sendee)
+                self.bomb_server.publish("info/bomb", sendee+":bomb")
 
     def handle_leaderboard(self):
         while True:
             if(self.started or self.final_leaderboard.is_set()):
+                time.sleep(0.1)
                 for name, player in self.players.items():
                     self.leaderboard[name] = int(player.dist)
                     sorted_tuples = sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True)
                     self.leaderboard = {k: v for k,v in sorted_tuples}
                     logging.debug(name+": "+str(self.leaderboard[name])+"m")
-                    time.sleep(0.5)
+                    # sort by position
                     leaderboard_data = json.dumps(self.leaderboard)
                     self.rank_server.publish("info/leaderboard", leaderboard_data, qos=1)
                 if self.final_leaderboard.is_set():
@@ -206,17 +220,29 @@ class Game:
                         player.status = 0
                     logging.debug("Game Data Erased")
 
+    def handle_disconnect(self, name):
+        try:
+            logging.debug("deleting "+name+" object")
+            self.players[name].disconnect = True
+            del self.players[name]
+            logging.debug("deleting "+name+" ready status")
+            del self.ready_data[name]
+            logging.debug("deleting "+name+" in leaderboard")
+            del self.leaderboard[name]
+            logging.debug("deleting "+name+" in final leaderboard")
+            del self.final_leaderboard[name]
+            logging.debug("deleted all instances of "+name)
+        except:
+            logging.debug(name+" some stuff cannot be deleted")
+
     def start_server_handler(self):
         logging.debug("Server Started")
         self.bomb_server.loop_start()
         self.rank_server.loop_start()
         self.game_server.loop_start()
-        # bomb_event = 1
         while True:
             pass
-        # while True:
-        #     (rc, mid) = self.bomb_server.publish("info/bomb", str(bomb_event), qos=1)
-        #     time.sleep(5)
+
         
 class Player:
     def __init__(self, ip, port, playername):
@@ -238,7 +264,7 @@ class Player:
         self.speedq = Queue()
         self.status = 0 
         # 0 = not ready, 1 = ready, 2 = ended
-        # think should add 2 = started and 3 = ended
+        self.disconnect = False
         
         # threads and starting processes
         self.speedthread = threading.Thread(target=self.handle_speed)
@@ -258,7 +284,9 @@ class Player:
         logging.debug(self.playername+" created")
         self.accel_server.loop_start()
         while True:
-            pass
+            time.sleep(0.1)
+            if(self.disconnect):
+                break
     
     def threadstart(self):
         self.speedthread.daemon = True
@@ -288,10 +316,13 @@ class Player:
     def handle_speed(self):
         while True:
             while not self.speedq.empty():
-                if self.status is 0 or self.status is 2:
+                if self.status == 0 or self.status == 2:
                     continue
                 speed = self.speedq.get()
                 self.calcDist(int(speed))
+            
+            if(self.disconnect):
+                break
 
     # assumes linear acceleration between speed datas
     def calcDist(self, newspeed):

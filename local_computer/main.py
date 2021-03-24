@@ -26,7 +26,7 @@ if __name__ == "__main__":
                         help='input your game password')
     parser.add_argument('-e', '--encrypt', action='store_true',
                         help='Use encryption using TLS')
-    parser.add_argument('-w', '--window', action='store_true',
+    parser.add_argument('-w', '--wsl', action='store_true',
                         help='Playing on WSL')
     args = parser.parse_args()
     print("Welcome {}".format(args.username))
@@ -41,28 +41,39 @@ if __name__ == "__main__":
     #Start Event => mqtt to game and fpga thread
     start_flag = threading.Event()
     start_queue_flag = threading.Event() #needed cos of countdown
+    start_queue_flag.clear()
     #Final Event => mqtt to game
     final_flag = threading.Event()
+    final_flag.clear()
     #Ready Object => mqtt to game
     ready_object = {}
     #Leaderboard Object => mqtt to game
     leaderboard_object = {}
     #End Game Event => Game to FPGA and MQTT
     end_flag = threading.Event()
+    end_flag.clear()
+    #Send bomb => Game to MQTT
+    send_bomb_flag = threading.Event()
+    #Bomb button press => FPGA to Game
+    bp_flag = threading.Event()
+    bp_flag.clear()
+    # got bombed => MQTT to Game and FPGA
+    bombed_flag = threading.Event()
+    bombed_flag.clear()
 
-    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_queue_flag, end_flag, args.windows))
+    fpga_thread = threading.Thread(target=uart_handler, args=('o',x_data,y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, args.wsl))
 
     # Start Thread for MQTT Client Start Client     
     mqtt = mqtt_client(args.serverip, int(args.port), args.username, args.password, args.encrypt,
                         y_mqtt_data, ready_flag, start_flag, final_flag, 
-                        leaderboard_object, ready_object, end_flag)
+                        leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag)
     mqtt.connect()
     mqtt_thread = threading.Thread(target=mqtt.start_client)    
     
     # Start Thread for game
     new_game = Game(x_data, y_game_data, 
                     ready_flag, start_flag, start_queue_flag, final_flag, 
-                    leaderboard_object, ready_object, end_flag)
+                    leaderboard_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag)
     
     fpga_thread.daemon = True
     mqtt_thread.daemon = True

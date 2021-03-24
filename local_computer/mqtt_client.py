@@ -5,6 +5,7 @@ import logging
 from random import randint
 import subprocess
 import json
+import ssl
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -15,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG,
 class mqtt_client:
     def __init__(self, ip, port, username, password, encrypt, 
                  accel_data, ready_flag, start_flag, final_flag, 
-                 leaderboard_object, ready_object, end_flag):
+                 leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -36,19 +37,25 @@ class mqtt_client:
         self.rank_client.on_subscribe =self.on_sub_rank
         self.username = username
         self.password = password
+<<<<<<< HEAD
         self.encrypt = encrypt
+=======
+
+        # data thats being passed around
+>>>>>>> 095d1c8bef77a5d7bea21ac63699689931669f8f
         self.accel_data = accel_data
         self.ready_flag = ready_flag
         self.start_flag = start_flag
         self.end_flag = end_flag
         self.final_flag = final_flag
+        self.send_bomb_flag = send_bomb_flag
+        self.bombed_flag = bombed_flag
+        self.ready = ready_object
 
         # game details
         self.started = False
-        self.bombed = False
         self.leaderboard = leaderboard_object
-        self.ready = ready_object
-
+        
     def connect(self):
         try:            
             # self.accel_client.username_pw_set(self.username, self.password)
@@ -85,9 +92,7 @@ class mqtt_client:
                 # start sending speed data
                 if not self.accel_data.empty():
                     sensor_data = self.accel_data.get()
-                    if self.bombed:
-                        sensor_data = int(sensor_data/2)
-                    logging.debug("Speed: "+str(sensor_data))
+                    # logging.debug("Speed: "+str(sensor_data))
                     self.accel_client.publish("info/speed/"+self.playername, str(sensor_data), qos=1)
                 
                 if self.end_flag.is_set():
@@ -95,6 +100,12 @@ class mqtt_client:
                     self.started = False
                     logging.debug(self.playername+" finished")
                     self.game_client.publish("info/game", self.playername+":end", qos=1)
+
+                if self.send_bomb_flag.is_set():
+                    # send bomb
+                    logging.debug("throw bomb")
+                    self.send_bomb_flag.clear()
+                    self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
             else:
                 # refresh to check if ready every 2s
                 if (self.ready_flag.is_set() and send_count<3):
@@ -126,11 +137,11 @@ class mqtt_client:
             logging.debug("Bad connection")
 
     def on_message_bomb(self, client, obj, msg):
-        message = str(msg.payload.decode("utf-8"))
-        if message == self.playername:
+        name, action = str(msg.payload.decode("utf-8")).split(":")
+        if action == 'bomb' and name == self.playername:
             # received bomb
-            self.bombed = True
-            logging.debug(msg.topic + " received bomb")
+            logging.debug(msg.topic + " bombed :(")
+            self.bombed_flag.set()
     
     # game settings
     def on_publish_game(self, client, userdata, mid):
@@ -181,11 +192,12 @@ class mqtt_client:
             self.final_flag.set()
         else:
             data = str(msg.payload.decode("utf-8", "ignore"))
-            logging.debug("client leaderboard: "+data)
+            # logging.debug("client leaderboard: "+data)
             data = json.loads(data) # decode json data
             # sort by position
             sorted_tuples = sorted(data.items(), key=lambda item: item[1], reverse=True)
-            self.leaderboard.update(data)
+            sorted_dict = {k: v for k,v in sorted_tuples}
+            self.leaderboard.update(sorted_dict)
 
     # handlers
     def show_leaderboard(self):
@@ -197,14 +209,12 @@ class mqtt_client:
 
     def handle_bomb(self):
         while True:
-            time.sleep(0.1)
-            if self.bombed:
-                # must hold for at least 2s 
-                time.sleep(2)
+            if self.send_bomb_flag.is_set():
                 # send bomb
-                self.bombed = False
-                logging.debug("throw back bomb")
-                self.bomb_client.publish("info/bomb", "sendback", qos=1)
+                logging.debug("throw bomb")
+                time.sleep(5)
+                self.send_bomb_flag.clear()
+                self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
 
 # ----------------UART Data-----------------
 def generate_random():
