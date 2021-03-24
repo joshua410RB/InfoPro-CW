@@ -113,13 +113,9 @@ class Game():
         #### START SCREEN features rendering ####
 
         # Multiplayer mode button
-        self.start_white_m = pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
-        self.start_grey_m = pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
         self.start_m_text = self.text_objects("Multiplayer", self.text_font_small, self.white)
 
         # Singleplayer mode
-        self.start_white_s = pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
-        self.start_grey_s = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
         self.start_s_text = self.text_objects("Single Player", self.text_font_small, self.white)
 
 
@@ -127,8 +123,7 @@ class Game():
         # Ready
         self.multiplayer_title_text = self.text_objects("Multiplayer Mode", self.text_font, self.white)
         self.ready_text = self.text_objects("Ready", self.text_font_small, self.black)
-        self.ready_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
-        self.ready_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
+        
 
         #### LOBBY SCREEN ####
         self.lobby_text = self.text_objects("In Lobby", self.text_font, self.white)
@@ -137,8 +132,6 @@ class Game():
         self.leaderboard_text = self.text_objects("Leaderboard", self.text_font_small, self.white)
 
         #### ENDSCREEN ####
-        self.exit_button_w = pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
-        self.exit_button_g = pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
         self.exit_text = self.text_objects("Exit", self.text_font_small, self.white)       
 
     def text_objects(self, text, font, color):
@@ -196,14 +189,15 @@ class Game():
 
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2+20 <= mouse[0] <= self.display_width/2+120 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
-                self.start_white_m
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2+20, self.display_height/2-20, 100, 40])
             else:
-                self.start_grey_m
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2+20, self.display_height/2-20, 100, 40])
 
             if self.display_width/2-120 <= mouse[0] <= self.display_width/2-20 and self.display_height/2-20 <= mouse[1] <= self.display_height/2+20:
-                self.start_white_s
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-120, self.display_height/2-20, 100, 40])
             else:
-                self.start_grey_s
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-120, self.display_height/2-20, 100, 40])
+                
 
             mult_button_text, mult_button_rect = self.start_m_text
             mult_button_rect.center = ((self.display_width/2+70),(self.display_height/2))
@@ -240,9 +234,10 @@ class Game():
             #self.update_readystatus(self.display_width/2, self.display_height/2)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2-40 <= mouse[1] <= self.display_height/2:
-                self.ready_button_w
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2-40, 100, 40])
             else:
-                self.ready_button_g
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2-40, 100, 40])
+                
 
             startbutton_text, startbutton_rect = self.ready_text
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2-20))
@@ -456,9 +451,9 @@ class Game():
             self.update_leaderboard(0.5,0.25)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+80 <= mouse[1] <= self.display_height/2+120:
-                self.exit_button_w
+                pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])
             else:
-                self.exit_button_g
+                pygame.draw.rect(self.screen, self.grey, [self.display_width/2-50, self.display_height/2+80, 100, 40])
 
             startbutton_text, startbutton_rect = self.text_objects("Exit", self.text_font_small, self.black)
             startbutton_rect.center = ((self.display_width/2),(self.display_height/2+100))
