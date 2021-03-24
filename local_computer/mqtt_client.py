@@ -15,9 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 # ----------------MQTT Settings-----------------
 
 class mqtt_client:
-    def __init__(self, ip, port, username, password, encrypt, 
-                 accel_data, ready_flag, start_flag, final_flag, 
-                 leaderboard_object, ready_object, end_flag, send_bomb_flag, bombed_flag):
+    def __init__(self, ip, port, username, password, encrypt):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -39,18 +37,19 @@ class mqtt_client:
         self.username = username
         self.password = password
         self.encrypt = encrypt
-        self.accel_data = accel_data
-        self.ready_flag = ready_flag
-        self.start_flag = start_flag
-        self.end_flag = end_flag
-        self.final_flag = final_flag
-        self.send_bomb_flag = send_bomb_flag
-        self.bombed_flag = bombed_flag
-        self.ready = ready_object
+        self.ready_flag = config.ready_flag
+        self.start_flag = config.start_flag
+        self.end_flag = config.end_flag
+        self.final_flag = config.final_flag
+        self.send_bomb_flag = config.send_bomb_flag
+        self.bombed_flag = config.bombed_flag
+        self.ready = config.ready_object
+        self.dist_data = config.dist_data
 
         # game details
         self.started = False
-        self.leaderboard = leaderboard_object
+        self.leaderboard = config.leaderboard_object
+        
         
     def connect(self):
         try:           
@@ -67,7 +66,7 @@ class mqtt_client:
                 self.rank_client.tls_insecure_set(True)
 
             lwm = self.playername+":died"
-            self.game_client.will_set("ifo/game", lwm, qos=1, retain=False)
+            self.game_client.will_set("info/game", lwm, qos=1, retain=False)
             self.accel_client.connect(self.brokerip, self.brokerport)
             self.bomb_client.connect(self.brokerip, self.brokerport)        
             self.game_client.connect(self.brokerip, self.brokerport)
@@ -93,8 +92,8 @@ class mqtt_client:
                 # try:
                     # sensor_data = self.accel_data.popleft()
                     # logging.debug("Speed: "+str(sensor_data))
-                logging.debug("Dist: "+str(config.dist_data))
-                self.accel_client.publish("info/dist/"+self.playername, int(config.dist_data), qos=1)
+                logging.debug("Dist: "+str(self.dist_data))
+                self.accel_client.publish("info/dist/"+self.playername, int(self.dist_data), qos=1)
                 # except IndexError:
                     # logging.debug("accel_data empty queue")
 

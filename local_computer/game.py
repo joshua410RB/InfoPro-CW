@@ -55,10 +55,7 @@ class Item(pygame.sprite.Sprite):
 
 
 class Game():
-    def __init__(self, x_data1, y_data1, 
-                 ready_flag, start_flag, start_queue_flag, final_flag, 
-                 leaderboard_object, ready_object, end_flag, bp_flag, send_bomb_flag, bombed_flag,
-                 display_width = 800, display_height = 600):
+    def __init__(self,  display_width = 800, display_height = 600):
         self.display_width = display_width
         self.display_height = display_height 
         self.car_width = 73
@@ -76,20 +73,20 @@ class Game():
         pygame.display.set_icon(self.icon)
         self.clock = pygame.time.Clock()
         # Set game objects
-        self.x_data = x_data1
-        self.y_data = y_data1
-        self.ready_flag = ready_flag
-        self.start_flag = start_flag
-        self.start_queue_flag = start_queue_flag
-        self.final_flag = final_flag
-        self.end_flag = end_flag
-        self.bp_flag = bp_flag
-        self.bombed_flag = bombed_flag
-        self.send_bomb_flag = send_bomb_flag
+        self.x_data = config.x_data_deque
+        self.y_data = config.y_game_data_deque
+        self.ready_flag = config.ready_flag
+        self.start_flag = config.start_flag
+        self.start_queue_flag = config.start_queue_flag
+        self.final_flag = config.final_flag
+        self.end_flag = config.end_flag
+        self.bp_flag = config.bp_flag
+        self.bombed_flag = config.bombed_flag
+        self.send_bomb_flag = config.send_bomb_flag
         self.gameStart = False
         self.gameExit = False
-        self.leaderboard = leaderboard_object
-        self.ready = ready_object
+        self.leaderboard = config.leaderboard_object
+        self.ready = config.ready_object
         self.text_font = pygame.font.Font('assets/Roboto-Regular.ttf',30)
         self.text_font_small = pygame.font.Font('assets/Roboto-Regular.ttf',15)
         self.largeText = pygame.font.Font('freesansbold.ttf',40)
@@ -167,9 +164,8 @@ class Game():
         # Emptying queue
         self.queue_empty()
 
-        time.sleep(2)
+        time.sleep(1)
         self.start_queue_flag.set()
-        time.sleep(0.5)
 
     def game_start(self):
         self.start_screen()
@@ -353,8 +349,10 @@ class Game():
         item_group.add(item)
 
         while (self.gameStart):
-            self.screen.blit(self.roadBg,(0,0))  
-            obstacle_speed = config.y_game_data
+            logging.debug("Length of Y Queue: {}, Length of X Queue: {}".format(str(len(self.y_data)), str(len(self.x_data))))
+            self.screen.blit(self.roadBg,(0,0)) 
+            if len(self.y_data) > 0:
+                obstacle_speed = self.y_data.popleft()
             item_speed = obstacle_speed if (obstacle_speed < 2) else obstacle_speed - 2
             
             if (int(pygame.time.get_ticks() - start_time)//1000 > 30):
@@ -371,7 +369,8 @@ class Game():
                     quit()
 
             # x = self.x_data[-1]
-            x = config.x_data
+            if len(self.x_data) > 0:
+                x = self.x_data.popleft()
             self.obstacle_starty += obstacle_speed
             item_starty += item_speed
 

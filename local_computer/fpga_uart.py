@@ -24,7 +24,7 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 
-def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag, wsl):
+def uart_handler(cmd, wsl):
     logging.debug("Starting FPGA UART")
     if wsl:
         inputCmd = "nios2-terminal.exe <<< {}".format(cmd)
@@ -33,6 +33,7 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
         proc = pexpect.spawn('nios2-terminal')    # logfile=sys.stdout
         proc.expect("Use the IDE stop button or Ctrl-C to terminate")
     
+    start_time = time.time()
     # Ignore first few Inputs
     inner_index = 0
     while inner_index < 5:
@@ -45,142 +46,101 @@ def uart_handler(cmd, x_data1, y_game_data2, y_mqtt_data, start_queue_flag, end_
     proc.send("n")
     index = 0
     sent_slow = sent_normal = False
-    start_time = time.time()
+    
     while True:
-        output = proc.readline().decode('utf-8')
-        # logging.debug(output)
-        tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
-        tmp = tmp[1].split("|")
-        logging.debug(tmp)
-        # Receive Data
-        current_x = tmp[0]
-        current_y = tmp[1]
-        current_z = tmp[2]
-        # button_pressed = int(tmp[3])
-        button_pressed =0 
-        if button_pressed == 1:
-            bp_flag.set()
-        elif button_pressed == 0:
-            bp_flag.clear()
-        # logging.debug(current_x+", "+current_y)
-        try:
-            converted_x = int(twos_comp(int(current_x, 16),16))//4
-            converted_y = int(twos_comp(int(current_y, 16),16))//4
-            converted_z = int(twos_comp(int(current_z, 16),16))//4
-        except:
-            pass
-        logging.debug("Converted vals: " + str(converted_x) + ", "+ str(converted_y) +", "+ str(converted_z))
-
-        scaled_x = (-converted_x+250)/600*900
-        if scaled_x < 80:
-            scaled_x = 80
-        elif scaled_x > 700:
-            scaled_x = 700
-        scaled_y = (-converted_y+250)//30
-        if scaled_y < 3:
-            scaled_y = 3
-        elif scaled_y > 10:
-            scaled_y = 10
-
-        logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
         current_time = time.time()
-        # if current_time - start_time > 0.0005:
-        if True:
+        # print(start_time, current_time)
+        # if True:
+        output = proc.readline().decode('utf-8')
+        if current_time - start_time > 0.001:
+            # logging.debug(output)
+
+            ############# Finding frame        
             try:
-                if start_queue_flag.is_set() and not end_flag.is_set():
-                    # x_data.append((-converted_x+250)/600*900)
-                    # y_game_data.append((-converted_y+250)//30)
-                    
-                    config.x_data=scaled_x 
-                    config.y_game_data = scaled_y
-                    # y_mqtt_data.append((-converted_y+250)//30)
-
-                    config.dist_data = calcDist(config.dist_data, prevspeed, scaled_y)
-                    # logging.debug(config.dist_data)
-                    prevspeed = scaled_y
+                find_frame = re.split('<->|<\|>', output)[1]
+                values = find_frame.split("|")
+                # logging.debug(values)
             except:
-                pass  
-            start_time = current_time
-        
-        if wsl:
-            # Send Data to change mode
-            if bombed_flag.is_set():
-                # Bomb received, change to slow mode
-                if not sent_slow:
-                    logging.debug("Slowed")
-                    proc.send("s")
-                    sent_slow = True
-                    sent_normal = False
-            else:
-                # back to normal
-                if not sent_normal:
-                    logging.debug("Normal Speed")
-                    proc.send("n")
-                    sent_normal = True
-                    sent_slow = False
+                proc.close()
+                logging.debug("FPGA UART Connection Failed")
+                break
 
+            ############ Getting x, y, z data
+            try:       
+                current_x = int(values[0],16)
+                current_y = int(values[1],16)
+                current_z = int(values[2],16)
+
+                # logging.debug(str(current_x)+", "+str(current_y))
+                converted_x = (current_x-32768)
+                converted_y = (current_y-32768)
+                converted_z = current_z
+            except:
+                logging.debug("Could not convert values")
+                pass
+
+            # logging.debug("Converted vals: " + str(converted_x) + ", "+ str(converted_y) +", "+ str(converted_z))
+
+            ########### Scaling x, y, z values based on the game
+            scaled_x = (-converted_x+256)/512*900
+            if scaled_x < 80:
+                scaled_x = 80
+            elif scaled_x > 700:
+                scaled_x = 700
+            scaled_y = (-converted_y+256)//30
+            if scaled_y < 3:
+                scaled_y = 3
+            elif scaled_y > 20:
+                scaled_y = 20
+
+            # logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
+
+            ########## Update Global Data Structures for other threads
+            if config.start_queue_flag.is_set() and not config.end_flag.is_set():
+                # x_data.append((-converted_x+250)/600*900)
+                # y_game_data.append((-converted_y+250)//30)
+                
+                config.x_data_deque.append(scaled_x)
+                config.y_game_data_deque.append(scaled_y)
+                # y_mqtt_data.append((-converted_y+250)//30)
+
+                config.dist_data = calcDist(config.dist_data, prevspeed, scaled_y)
+                logging.debug(config.dist_data)
+                prevspeed = scaled_y
+            
+
+            ############ Handle Button
+            button_pressed = int(values[3])
+            button_pressed =0
+            if button_pressed == 1:
+                config.bp_flag.set()
+            elif button_pressed == 0:
+                config.bp_flag.clear()
+        
+
+            ########### Check current player status
+            if not wsl:
+                # Send Data to change mode
+                if config.bombed_flag.is_set():
+                    # Bomb received, change to slow mode
+                    if not sent_slow:
+                        logging.debug("Slowed")
+                        proc.send("s")
+                        sent_slow = True
+                        sent_normal = False
+                else:
+                    # back to normal
+                    if not sent_normal:
+                        logging.debug("Normal Speed")
+                        proc.send("n")
+                        sent_normal = True
+                        sent_slow = False
+
+            start_time = current_time
         index += 1
+
     
     logging.debug("Closing UART")
 
-
-
-# def uart_handler(cmd, x_data, y_game_data, y_mqtt_data, start_queue_flag, end_flag, bp_flag, bombed_flag):
-#     logging.debug("Starting FPGA UART")
-#     inputCmd = "nios2-terminal <<< {}".format(cmd)
- 
-#     process = subprocess.Popen(inputCmd, shell=True,
-#                                 executable='/bin/bash' , 
-#                                 stdin=subprocess.PIPE,
-#                                 stdout=subprocess.PIPE)
-#     index = 0
-#     while True:
-#         output = process.stdout.readline()
-#         # if process.poll() is not None and output == b'':
-#         #     break
-#         output = output.decode("utf-8")
-#         logging.debug(output)
-#         if (index >5):
-#             tmp = re.split('; |, |<->|<|>:|\r|\n\|', output)
-#             tmp = tmp[1].split("|")
-#             logging.debug(tmp)
-#             if len(tmp) > 2:
-#                 current_x = tmp[0]
-#                 current_y = tmp[1]
-#                 button_pressed = tmp[2]
-#                 if button_pressed == 1:
-#                     bp_flag.set()
-#                 elif button_pressed == 0:
-#                     bp_flag.clear()
-#                 logging.debug(current_x+", "+current_y)
-#                 converted_x = twos_comp(int(current_x, 16),16)
-#                 converted_y = twos_comp(int(current_y, 16),16)
-#                 logging.debug(str(-converted_x)+", "+str(-converted_y))
-#                 logging.debug(str((-converted_x+250)/600*900)+", "+str(-converted_y+250))
-#                 try:
-#                     if start_queue_flag.is_set() and not end_flag.is_set():
-#                         logging.debug("Putting values in queue from fpga")
-#                         # x_data.put((-converted_x+250)/600*900)
-#                         x_data.append((-converted_x+250)/600*900)
-#                         y_mqtt_data.put((-converted_y+250)//30)
-#                         y_game_data.put((-converted_y+250)//30)
-#                 except:
-#                     pass  
-                    
-
-#         index += 1
-    
-#     logging.debug("Closing UART")
 if __name__ == "__main__":
-    x_data = deque()
-    y_game_data = deque()
-    y_mqtt_data = deque()
-    start_flag = threading.Event()
-    start_flag.clear()
-    end_flag = threading.Event()
-    end_flag.clear()
-    bombed_flag = threading.Event()
-    bombed_flag.clear()
-    bp_flag = threading.Event()
-    bp_flag.clear()
-    uart_handler('o',x_data,y_game_data, y_mqtt_data,start_flag, end_flag, bp_flag, bombed_flag, True)
+    uart_handler('n',True)
