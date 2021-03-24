@@ -358,13 +358,8 @@ class Game():
 
         while (self.gameStart):
             self.screen.blit(self.roadBg,(0,0))  
-            try:
-                obstacle_speed = config.y_game_data
-                logging.debug("Taking from y queue")
-            except IndexError:
-                logging.debug("Y queue empty")
+            obstacle_speed = config.y_game_data
             item_speed = obstacle_speed - 2
-
             
             if (int(pygame.time.get_ticks() - start_time)//1000 > 30):
                 break
@@ -380,11 +375,7 @@ class Game():
                     quit()
 
             # x = self.x_data[-1]
-            try:
-                x = config.x_data
-                logging.debug("Taking from queue")
-            except IndexError:
-                logging.debug("Queue Empty")
+            x = config.x_data
             self.obstacle_starty += obstacle_speed
             item_starty += item_speed
 
