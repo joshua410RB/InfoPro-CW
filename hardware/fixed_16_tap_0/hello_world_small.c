@@ -230,22 +230,22 @@ int main()
 
 	  //================== setting filter coefficients based on the mode player is in ==================
 	  if (mode == normal){
-		  xbank = 0;
-		  ybank = 0;
-		  zbank = 0;
-	  } else if (mode == slow){
 		  xbank = 1;
 		  ybank = 1;
 		  zbank = 1;
-	  } else if (mode == stop){
+	  } else if (mode == slow){
 		  xbank = 2;
 		  ybank = 2;
 		  zbank = 2;
+	  } else if (mode == stop){
+		  xbank = 3;
+		  ybank = 3;
+		  zbank = 3;
 	  }
 	  IOWR(X_COEFF_BANK_BASE, 0, xbank);	// set x-axis coefficient bank
 	  IOWR(Y_COEFF_BANK_BASE, 0, ybank);	// set y-axis coefficient bank
 	  IOWR(Z_COEFF_BANK_BASE, 0, zbank);	// set z-axis coefficient bank
-	  //==================== coeffs are set in signal_path_32_tap.v ===================================
+	  //==================== coeffs are set in signal_path_16_tap.v ===================================
   }
 
   return 0;

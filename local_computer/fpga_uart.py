@@ -48,7 +48,7 @@ def uart_handler(cmd, wsl):
     # calcualting dist variables
     prevspeed = 0
     # Start off with Normal Mode
-    proc.send("n")
+    proc.send("x")
     index = 0
     sent_slow = sent_normal = False
     
@@ -56,7 +56,7 @@ def uart_handler(cmd, wsl):
         current_time = time.time()
         # print(start_time, current_time)
         output = proc.readline().decode('utf-8')
-        if current_time - start_time > 0.0001:
+        if current_time - start_time > 0.01:
         # if True:
             # logging.debug(output)
 
@@ -98,7 +98,7 @@ def uart_handler(cmd, wsl):
             elif scaled_y > 20:
                 scaled_y = 20
 
-            logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
+            # logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
             xs.append(dt.datetime.now().strftime("%H:%M:%S.%f"))
             ys.append(scaled_x)
             # logging.debug(xs)
@@ -152,10 +152,9 @@ def uart_handler(cmd, wsl):
     logging.debug("Closing UART")
     
 def animate(i, xs, ys, ax):
-
     # Limit x and y lists to 20 items
-    xs = xs[-1000:]
-    ys = ys[-1000:]
+    xs = xs[-50:]
+    ys = ys[-50:]
 
     # Draw x and y lists
     ax.clear()
