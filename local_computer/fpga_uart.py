@@ -52,7 +52,7 @@ def uart_handler(cmd, wsl):
         # print(start_time, current_time)
         # if True:
         output = proc.readline().decode('utf-8')
-        if current_time - start_time > 0.001:
+        if current_time - start_time > 0.009:
             # logging.debug(output)
 
             ############# Finding frame        
@@ -93,10 +93,11 @@ def uart_handler(cmd, wsl):
             elif scaled_y > 20:
                 scaled_y = 20
 
-            # logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
+            logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
 
             ########## Update Global Data Structures for other threads
             if config.start_queue_flag.is_set() and not config.end_flag.is_set():
+                logging.debug("Adding to Queue")
                 # x_data.append((-converted_x+250)/600*900)
                 # y_game_data.append((-converted_y+250)//30)
                 
@@ -105,7 +106,7 @@ def uart_handler(cmd, wsl):
                 # y_mqtt_data.append((-converted_y+250)//30)
 
                 config.dist_data = calcDist(config.dist_data, prevspeed, scaled_y)
-                logging.debug(config.dist_data)
+                logging.debug("UART Changing dist: " + str(config.dist_data))
                 prevspeed = scaled_y
             
 
@@ -143,4 +144,5 @@ def uart_handler(cmd, wsl):
     logging.debug("Closing UART")
 
 if __name__ == "__main__":
+    config.start_queue_flag.set()
     uart_handler('n',True)
