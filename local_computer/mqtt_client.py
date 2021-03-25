@@ -91,7 +91,7 @@ class mqtt_client:
                 # try:
                     # sensor_data = self.accel_data.popleft()
                     # logging.debug("Speed: "+str(sensor_data))
-                logging.debug("Dist: "+str(config.dist_data))
+                # logging.debug("Dist: "+str(config.dist_data))
                 self.accel_client.publish("info/dist/"+self.playername, int(config.dist_data), qos=1)
                 # except IndexError:
                     # logging.debug("accel_data empty queue")

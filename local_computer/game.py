@@ -104,7 +104,7 @@ class Game():
         self.bombnumber = 0
 
         # Pre rendering text
-        self.slow_text = self.text_objects("You are slowed!", self.largeText, self.white)
+        self.slowed_text = self.text_objects("You are slowed!", self.largeText, self.white)
         self.crash_text = self.text_objects("You have crashed!", self.largeText, self.white)
 
         #### START SCREEN features rendering ####
@@ -366,7 +366,7 @@ class Game():
         item_group.add(item)
 
         while (self.gameStart):
-            logging.debug("Length of Y Queue: {}, Length of X Queue: {}".format(str(len(self.y_data)), str(len(self.x_data))))
+            # logging.debug("Length of Y Queue: {}, Length of X Queue: {}".format(str(len(self.y_data)), str(len(self.x_data))))
             self.screen.blit(self.roadBg,(0,0)) 
             if len(self.y_data) > 0:
                 obstacle_speed = self.y_data.popleft()
@@ -454,7 +454,7 @@ class Game():
                 item_startx = random.randrange(10,self.display_width-10)
 
             pygame.display.update()
-            logging.debug("Current FPS: "+ str(self.clock.get_fps()))
+            # logging.debug("Current FPS: "+ str(self.clock.get_fps()))
             self.clock.tick(120)
 
         self.end_flag.set()

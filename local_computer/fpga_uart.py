@@ -55,20 +55,29 @@ def uart_handler(cmd, wsl):
     while True:
         current_time = time.time()
         # print(start_time, current_time)
-        output = proc.readline().decode('utf-8')
+        output = proc.readline().decode('utf-8')            
+
+        ############# Finding frame        
+        try:
+            find_frame = re.split('<->|<\|>', output)[1]
+            values = find_frame.split("|")
+            # logging.debug(values)
+        except:
+            proc.close()
+            logging.debug("FPGA UART Connection Failed")
+            break
+
+        ############ Handle Button
+
+        button_pressed = int(values[3])
+        # button_pressed =0
+        if button_pressed == 1:
+            config.bp_flag.set()
+            logging.debug("Button Pressed !!!!!")
+            
         if current_time - start_time > 0.005:
         # if True:
             # logging.debug(output)
-
-            ############# Finding frame        
-            try:
-                find_frame = re.split('<->|<\|>', output)[1]
-                values = find_frame.split("|")
-                # logging.debug(values)
-            except:
-                proc.close()
-                logging.debug("FPGA UART Connection Failed")
-                break
 
             ############ Getting x, y, z data
             try:       
@@ -99,8 +108,8 @@ def uart_handler(cmd, wsl):
                 scaled_y = 20
 
             # logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
-            xs.append(dt.datetime.now().strftime("%H:%M:%S.%f"))
-            ys.append(scaled_x)
+            # xs.append(dt.datetime.now().strftime("%H:%M:%S.%f"))
+            # ys.append(scaled_x)
             # logging.debug(xs)
             # logging.debug(ys)
 
@@ -118,13 +127,7 @@ def uart_handler(cmd, wsl):
                 prevspeed = scaled_y
             
 
-            ############ Handle Button
-            button_pressed = int(values[3])
-            button_pressed =0
-            if button_pressed == 1:
-                config.bp_flag.set()
-            elif button_pressed == 0:
-                config.bp_flag.clear()
+
         
 
             ########### Check current player status
@@ -178,5 +181,5 @@ def main():
 
 if __name__ == "__main__":
     config.start_queue_flag.set()
-    # uart_handler('n',True)
-    main()
+    uart_handler('n',False)
+    # main()
