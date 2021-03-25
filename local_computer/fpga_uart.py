@@ -48,7 +48,7 @@ def uart_handler(cmd, wsl):
     # calcualting dist variables
     prevspeed = 0
     # Start off with Normal Mode
-    proc.send("x")
+    proc.send("n")
     index = 0
     sent_slow = sent_normal = False
     
