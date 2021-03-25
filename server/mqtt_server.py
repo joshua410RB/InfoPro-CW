@@ -257,14 +257,16 @@ class Game:
         res = []
         for name, _ in leaderboard_copy.items():
             res.append(name)
-
-        while(len(res) < 6):
-            res.append(None)
-        db = create_connection('db/racegame.db')
-        gameid = create_game_record(db, res)
-        # create dist record
-        for name, dist in leaderboard_copy.items():
-            create_distance_record(db, (name, int(dist), gameid))
+        if len(res) != 0:
+            while(len(res) < 6):
+                res.append(None)
+            db = create_connection('db/racegame.db')
+            gameid = create_game_record(db, res)
+            # create dist record
+            for name, dist in leaderboard_copy.items():
+                create_distance_record(db, (name, int(dist), gameid))
+        else:
+            logging.debug("Did not create new game record as game ended prematurely.")
 
     def get_highscore(self):
         # highscore is a list of lists
