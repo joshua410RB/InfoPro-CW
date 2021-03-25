@@ -372,7 +372,7 @@ class Game():
                 obstacle_speed = self.y_data.popleft()
             item_speed = obstacle_speed if (obstacle_speed < 2) else obstacle_speed - 2
             
-            if (int(pygame.time.get_ticks() - start_time)//1000 > 30):
+            if (int(pygame.time.get_ticks() - start_time)//1000 > 60):
                 break
                 
             currspeed_text, currspeed_rect = self.text_objects("Current Speed: "+str(obstacle_speed), self.text_font_small, self.white)
@@ -418,17 +418,21 @@ class Game():
                         self.send_bomb_flag.set()
                         logging.debug("Sent bomb")
 
-                if self.bombed_flag.is_set():
+                if self.bombed_flag.is_set() and not slowed:
                     start_slow_time = pygame.time.get_ticks()
-                    self.bombed_flag.clear()
                     slowed = True
 
                 if (slowed):
-                    if int(pygame.time.get_ticks() - start_slow_time)//1000 < 3:
+                    logging.debug("Slowed")
+                    if int(pygame.time.get_ticks() - start_slow_time)//1000 < 5:
+                        logging.debug("Current slow time {}".format(str(start_slow_time)))
+                        logging.debug("Still Getting Bombed, time is {}".format(str(pygame.time.get_ticks())))
                         TextSurf, TextRect = self.slowed_text 
-                        TextRect.center = ((self.display_width/2),(self.display_height/2))
+                        TextRect.center = ((self.display_width/2),(self.display_height/2-100))
                         self.screen.blit(TextSurf, TextRect)
                     else:
+                        logging.debug("Bomb clear")
+                        self.bombed_flag.clear()
                         slowed = False
 
             # Check for crashes
