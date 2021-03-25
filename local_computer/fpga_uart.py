@@ -56,7 +56,7 @@ def uart_handler(cmd, wsl):
         current_time = time.time()
         # print(start_time, current_time)
         output = proc.readline().decode('utf-8')
-        if current_time - start_time > 0.01:
+        if current_time - start_time > 0.005:
         # if True:
             # logging.debug(output)
 
