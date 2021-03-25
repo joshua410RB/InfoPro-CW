@@ -55,9 +55,9 @@ def uart_handler(cmd, wsl):
     while True:
         current_time = time.time()
         # print(start_time, current_time)
-        # if True:
         output = proc.readline().decode('utf-8')
-        if current_time - start_time > 0.005:
+        if current_time - start_time > 0.0001:
+        # if True:
             # logging.debug(output)
 
             ############# Finding frame        
@@ -101,6 +101,8 @@ def uart_handler(cmd, wsl):
             logging.debug("Scaled Vals: "+ str(scaled_x) + ", "+ str(scaled_y) )
             xs.append(dt.datetime.now().strftime("%H:%M:%S.%f"))
             ys.append(scaled_x)
+            # logging.debug(xs)
+            # logging.debug(ys)
 
             ########## Update Global Data Structures for other threads
             if config.start_queue_flag.is_set() and not config.end_flag.is_set():
@@ -152,8 +154,8 @@ def uart_handler(cmd, wsl):
 def animate(i, xs, ys, ax):
 
     # Limit x and y lists to 20 items
-    xs = xs[-50:]
-    ys = ys[-50:]
+    xs = xs[-1000:]
+    ys = ys[-1000:]
 
     # Draw x and y lists
     ax.clear()
@@ -163,13 +165,13 @@ def animate(i, xs, ys, ax):
     plt.title('Accelerometer Sensor Values Over Time')
     plt.ylabel('Accelerometer Value')
     plt.xlabel('Time (s)')
-    plt.ylim((-300,100))
+    plt.ylim((-100,1000))
     plt.grid()
 
 def main():
     # put your code here ...
     fig,ax = plt.subplots()
-    x = threading.Thread(target=uart_handler, args={"f"})
+    x = threading.Thread(target=uart_handler, args={"n",True})
     x.start()
     # Set up plot to call animate() function periodically
     ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys, ax), interval=1000)
@@ -177,5 +179,5 @@ def main():
 
 if __name__ == "__main__":
     config.start_queue_flag.set()
-    uart_handler('n',True)
+    # uart_handler('n',True)
     main()
