@@ -66,8 +66,7 @@ class Game():
         self.red = (255,0,0)
         pygame.init()
         # Create Screen Display
-        self.screen = pygame.display.set_mode((self.display_width,self.display_height), DOUBLEBUF)
-        self.screen.set_alpha(None)
+        self.screen = pygame.display.set_mode((self.display_width,self.display_height))
         pygame.display.set_caption('Multiplayer Racing Game')
         self.icon = pygame.image.load('img/checkered-flag.png') #  icon from: Flaticon.com
         pygame.display.set_icon(self.icon)
@@ -128,6 +127,9 @@ class Game():
 
         #### LEADERBOARD SCREEN ####
         self.leaderboard_text = self.text_objects("Leaderboard", self.text_font_small, self.white)
+        
+        #### HIGHSCORE SCREEN ####
+        self.highscore_text = self.text_objects("Highscore", self.text_font_small, self.white)
 
         #### ENDSCREEN ####
         self.exit_text = self.text_objects("Exit", self.text_font_small, self.white)       
@@ -322,6 +324,20 @@ class Game():
             margin += 40
             position += 1
 
+    def update_highscore(self, width_pos, height_pos):
+        lb_title, lb_rect = self.highscore_text
+        lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos))
+        self.screen.blit(lb_title, lb_rect)
+        position = 0
+        margin = 40 
+        for i in range(len(self.highscore)):
+            player, dist = self.highscore[str(i)]
+            lb_text, lb_rect = self.text_objects(str(i+1) + ". "+ str(player)+": "+str(dist)+"m", self.text_font_small, self.white)
+            lb_rect.center = ((self.display_width*width_pos),(self.display_height*height_pos+margin))
+            self.screen.blit(lb_text, lb_rect)
+            margin += 40
+            position += 1
+
     def race_screen(self, mode):
         logging.debug("Go into race screen, "+ mode)
         start_time = pygame.time.get_ticks()
@@ -450,7 +466,8 @@ class Game():
             self.screen.blit(self.leaderboardBg, (0,0))
             self.screen.blit(self.calculatingBg, (250, 505)) 
 
-            self.update_leaderboard(0.5,0.25)
+            self.update_leaderboard(0.33,0.25)
+            self.update_highscore(0.66,0.25)
             mouse = pygame.mouse.get_pos() 
             if self.display_width/2-50 <= mouse[0] <= self.display_width/2+50 and self.display_height/2+80 <= mouse[1] <= self.display_height/2+120:
                 pygame.draw.rect(self.screen, self.white, [self.display_width/2-50, self.display_height/2+80, 100, 40])

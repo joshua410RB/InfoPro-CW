@@ -44,7 +44,6 @@ class mqtt_client:
         self.send_bomb_flag = config.send_bomb_flag
         self.bombed_flag = config.bombed_flag
         self.ready = config.ready_object
-        self.dist_data = config.dist_data
 
         # game details
         self.started = False
@@ -92,8 +91,8 @@ class mqtt_client:
                 # try:
                     # sensor_data = self.accel_data.popleft()
                     # logging.debug("Speed: "+str(sensor_data))
-                logging.debug("Dist: "+str(self.dist_data))
-                self.accel_client.publish("info/dist/"+self.playername, int(self.dist_data), qos=1)
+                logging.debug("Dist: "+str(config.dist_data))
+                self.accel_client.publish("info/dist/"+self.playername, int(config.dist_data), qos=1)
                 # except IndexError:
                     # logging.debug("accel_data empty queue")
 
@@ -195,7 +194,7 @@ class mqtt_client:
             self.final_flag.set()
         elif msg.topic == "info/leaderboard/highscore":
             data = str(msg.payload.decode("utf-8", "ignore"))
-            # logging.debug("client leaderboard: "+data)
+            logging.debug("client highscores: "+data)
             data = json.loads(data) # decode json data
             self.highscore.update(data)
         else:

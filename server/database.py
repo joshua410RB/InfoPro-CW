@@ -41,7 +41,7 @@ def create_game_record(conn, game_record):
 
 # Get Highscores
 def select_highscore(conn):
-    sql_query = """SELECT username, distance FROM distance_record ORDER BY distance LIMIT 5"""
+    sql_query = """SELECT username, distance FROM distance_record ORDER BY distance DESC LIMIT 5"""
     cur = conn.cursor()
     cur.execute(sql_query)
     return cur.fetchall()

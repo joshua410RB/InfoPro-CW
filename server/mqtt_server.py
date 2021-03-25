@@ -3,7 +3,7 @@ import time
 import json
 import threading
 import logging
-from database import *
+from database import create_connection, create_game_record, create_distance_record, select_highscore
 from queue import Queue
 import random
 
@@ -44,11 +44,11 @@ class Game:
         self.db = create_connection('db/racegame.db')
 
         # threads and starting processes
-        self.mqtt_thread = threading.Thread(target=self.start_server_handlerl, daemon=True)
-        self.join_thread = threading.Thread(target=self.handle_join, daemon=True)
-        self.leaderboard_thread = threading.Thread(target=self.handle_leaderboard, daemon=True)
-        self.bomb_thread = threading.Thread(target=self.handle_bomb, daemon=True)
-        self.start_thread = threading.Thread(target=self.handle_start, daemon=True)
+        self.mqtt_thread = threading.Thread(name= "mqtt-thread",target=self.start_server_handler, daemon=True)
+        self.join_thread = threading.Thread(name= "join-thread",target=self.handle_join, daemon=True)
+        self.leaderboard_thread = threading.Thread(name="leaderboard-thread",target=self.handle_leaderboard, daemon=True)
+        self.bomb_thread = threading.Thread(name="bomb-thread",target=self.handle_bomb, daemon=True)
+        self.start_thread = threading.Thread(name="start-thread",target=self.handle_start, daemon=True)
 
     def connect(self):
         try:
@@ -255,21 +255,23 @@ class Game:
         # create game record assume leaderboard sorted alr
         leaderboard_copy = self.leaderboard.copy()
         res = []
-        for name, _ in leaderboard_copy:
+        for name, _ in leaderboard_copy.items():
             res.append(name)
 
         while(len(res) < 6):
             res.append(None)
-
-        gameid = create_game_record(self.db, res)
+        db = create_connection('db/racegame.db')
+        gameid = create_game_record(db, res)
         # create dist record
-        for name, dist in leaderboard_copy:
-            create_distance_record(self.db, (name, int(dist), gameid))
+        for name, dist in leaderboard_copy.items():
+            create_distance_record(db, (name, int(dist), gameid))
 
     def get_highscore(self):
         # highscore is a list of lists
-        highscore = select_highscore(self.db)
+        db = create_connection('db/racegame.db')
+        highscore = select_highscore(db)
         highscore_dict = { i: (item[0], item[1]) for i, item in enumerate(highscore)}
+        logging.debug("Getting Highscores")
         return highscore_dict
 
 class Player:
