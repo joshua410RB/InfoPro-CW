@@ -69,6 +69,7 @@ module signal_path_nios_top_mod(
     logic[15:0] result;
 	logic[15:0] x_out;
 	logic[15:0] y_out;
+	logic[15:0] z_out;
     logic[15:0] x_read;
     logic[15:0] y_read;
     logic[15:0] z_read;
@@ -87,10 +88,12 @@ module signal_path_nios_top_mod(
 
     logic[9:0] led;
 	 
-//	assign HEX0[7] = 1;
-// 	assign HEX1[7] = 1;
-//	assign HEX2[7] = 1;
-//   assign HEX3[7] = 1;
+	assign HEX0[7] = 1;
+	assign HEX1[7] = 1;
+	assign HEX2[7] = 1;
+ 	assign HEX3[7] = 1;
+	assign HEX4[7] = 1;
+	assign HEX5[7] = 1;
 //	assign HEX4 = 255;
 //	assign HEX5 = 255;
 
@@ -100,8 +103,8 @@ module signal_path_nios_top_mod(
 	// hex_to_7seg disp3(HEX3, y_read[15:12]);
 
     always_comb begin
-		LEDR[1:0] = y_bank;
-//        LEDR = led;
+		// LEDR[1:0] = y_bank;
+       LEDR = led;
 //
 //        ARDUINO_IO[8] = ready;
 //        ARDUINO_IO[9] = data_interrupt;
@@ -109,6 +112,7 @@ module signal_path_nios_top_mod(
 
 		x_read = x_out + 16'h8000;
 		y_read = y_out + 16'h8000;
+		z_read = z_out + 16'h8000;
 
         update_en = update_ctrl[8];
         update_axis = update_ctrl[7:6];
@@ -132,7 +136,7 @@ module signal_path_nios_top_mod(
 			.x_coeff_bank_export                    (x_bank),        				//                    x_coeff_bank.export
 			.y_coeff_bank_export                    (y_bank),        				//                    y_coeff_bank.export
 			.z_coeff_bank_export                    (z_bank),        				//                    z_coeff_bank.export
-			.hex0_export        							 (HEX0),        					//        hex0_external_connection.export
+			.hex0_export        							 (HEX0[6:0]),        					//        hex0_external_connection.export
 			.hex1_export        							 (HEX1),        					//        hex1_external_connection.export
 			.hex2_export        							 (HEX2),          				//        hex2_external_connection.export
 			.hex3_export        							 (HEX3),        					//        hex3_external_connection.export
@@ -149,7 +153,7 @@ module signal_path_nios_top_mod(
         .pll_lock(pll_lock),
         .x_data(x_out),
         .y_data(y_out),
-        .z_data(z_read),
+        .z_data(z_out),
         .available(ready),
         .data_interrupt(data_interrupt),
         .x_bank(x_bank),

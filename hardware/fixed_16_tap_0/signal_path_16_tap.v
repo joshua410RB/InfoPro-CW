@@ -23,7 +23,8 @@ module signal_path_16_tap(
     input logic spi_miso,
     output logic spi_cs
 );
-    parameter CLOCK_DIV = 50000 - 1;   // originally 500000
+    parameter CLOCK_DIV = 50000 - 1;   // originally 50000: 1ms
+    parameter SAMPLE_PERIOD = 500000 - 1;   // sample period to send data to NIOS2 250000: 5ms
 
     typedef enum logic[3:0] {
         IDLE = 4'd0,
@@ -39,8 +40,11 @@ module signal_path_16_tap(
     logic[3:0] state;
     logic ir_reg;
     logic[31:0] timer_acc;
+    logic[31:0] timer_acc_2;
     wire[31:0] new_timer_acc;
+    wire[31:0] new_timer_acc_2;
     assign new_timer_acc = timer_acc + 1;
+    assign new_timer_acc_2 = timer_acc_2 + 1;
 
     logic accel_enable;
     logic accel_busy;
@@ -273,6 +277,7 @@ module signal_path_16_tap(
     initial begin
         state = IDLE;
         timer_acc = 0;
+        timer_acc_2 = 0;
         available = 1;
         ir_reg = 1;
         data_interrupt = 0;
@@ -284,6 +289,14 @@ module signal_path_16_tap(
         end
         else begin
             timer_acc <= new_timer_acc;
+        end
+        if(timer_acc_2 == SAMPLE_PERIOD) begin
+            timer_acc_2 <= 0;
+            // data_interrupt <= 1;
+        end
+        else begin
+            timer_acc_2 <= new_timer_acc_2;
+            // data_interrupt <= 0;
         end
         if(accel_ready==1) begin
             if(state==IDLE) begin
