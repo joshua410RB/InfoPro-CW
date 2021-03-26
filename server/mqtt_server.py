@@ -257,6 +257,10 @@ class Game:
         res = []
         for name, _ in leaderboard_copy.items():
             res.append(name)
+            # can only add top 6 people's result into db
+            if len(res) == 6:
+                break
+        
         if len(res) != 0:
             while(len(res) < 6):
                 res.append(None)
