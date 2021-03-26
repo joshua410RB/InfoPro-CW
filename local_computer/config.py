@@ -41,3 +41,6 @@ bp_flag = threading.Event()
 
 # got bombed => MQTT to Game and FPGA
 bombed_flag = threading.Event()
+
+# Bomb Sender's name
+bomb_sender = ""

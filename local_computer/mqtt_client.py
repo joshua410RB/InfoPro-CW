@@ -138,11 +138,15 @@ class mqtt_client:
             logging.debug("Bad connection")
 
     def on_message_bomb(self, client, obj, msg):
-        name, action = str(msg.payload.decode("utf-8")).split(":")
-        if action == 'bomb' and name == self.playername:
-            # received bomb
-            logging.debug(msg.topic + " bombed :(")
-            self.bombed_flag.set()
+        logging.debug(str(msg.payload.decode("utf-8")))
+        involved, action = str(msg.payload.decode("utf-8")).split(":")
+        if action == 'bomb':
+            name, sender = involved.split("-")
+            if name == self.playername:
+                # received bomb
+                config.bomb_sender = sender
+                logging.debug(msg.topic + " bombed by " +sender+":(")
+                self.bombed_flag.set()
     
     # game settings
     def on_publish_game(self, client, userdata, mid):

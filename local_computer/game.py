@@ -104,8 +104,9 @@ class Game():
         self.bombnumber = 0
 
         # Pre rendering text
-        self.slowed_text = self.text_objects("You are slowed!", self.largeText, self.white)
+        
         self.crash_text = self.text_objects("You have crashed!", self.largeText, self.white)
+        self.bomb_thrown_text = self.text_objects("You threw a bomb!", self.largeText, self.white)
 
         #### START SCREEN features rendering ####
 
@@ -342,7 +343,9 @@ class Game():
         logging.debug("Go into race screen, "+ mode)
         start_time = pygame.time.get_ticks()
         start_slow_time = 0
+        bomb_thrown_start_time = 0
         slowed = False
+        bomb_thrown = False
 
         # Create Player Sprite
         x = (self.display_width * 0.45)
@@ -413,6 +416,8 @@ class Game():
                     logging.debug("Button is Pressed!")
                     if self.bombnumber > 0:
                         logging.debug("Bomb Sent from game!")
+                        bomb_thrown = True
+                        bomb_thrown_start_time = pygame.time.get_ticks()
                         self.bombnumber -= 1
                         self.bp_flag.clear()
                         self.send_bomb_flag.set()
@@ -423,17 +428,25 @@ class Game():
                     slowed = True
 
                 if (slowed):
-                    logging.debug("Slowed")
+                    # logging.debug("Slowed")
                     if int(pygame.time.get_ticks() - start_slow_time)//1000 < 5:
-                        logging.debug("Current slow time {}".format(str(start_slow_time)))
-                        logging.debug("Still Getting Bombed, time is {}".format(str(pygame.time.get_ticks())))
-                        TextSurf, TextRect = self.slowed_text 
+                        # logging.debug("Current slow time {}".format(str(start_slow_time)))
+                        # logging.debug("Still Getting Bombed, time is {}".format(str(pygame.time.get_ticks())))
+                        TextSurf, TextRect = self.text_objects("You have been bombed by "+config.bomb_sender+"!", self.largeText, self.white)
                         TextRect.center = ((self.display_width/2),(self.display_height/2-100))
                         self.screen.blit(TextSurf, TextRect)
                     else:
-                        logging.debug("Bomb clear")
+                        # logging.debug("Bomb clear")
                         self.bombed_flag.clear()
                         slowed = False
+
+                if bomb_thrown:
+                    if int(pygame.time.get_ticks() - bomb_thrown_start_time)//1000 < 2: 
+                        TextSurf, TextRect = self.bomb_thrown_text 
+                        TextRect.center = ((self.display_width/2),(self.display_height/2-250))
+                        self.screen.blit(TextSurf, TextRect)
+                    else:
+                        bomb_thrown = False
 
             # Check for crashes
             if player.collide(obstacle_group):

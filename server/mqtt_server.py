@@ -197,8 +197,8 @@ class Game:
                 if randomise:
                     sendee, _ = random.choice(list(self.players.items()))
 
-                logging.debug("sent bomb to "+sendee)
-                self.bomb_server.publish("info/bomb", sendee+":bomb")
+                logging.debug(sender + " sent bomb to "+sendee)
+                self.bomb_server.publish("info/bomb", sendee+"-"+sender+":bomb")
 
     def handle_leaderboard(self):
         while True:
