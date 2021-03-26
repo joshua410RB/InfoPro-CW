@@ -105,8 +105,8 @@ class Game():
 
         # Pre rendering text
         
-        self.crash_text = self.text_objects("You have crashed!", self.largeText, self.white)
-        self.bomb_thrown_text = self.text_objects("You threw a bomb!", self.largeText, self.white)
+        self.crash_text = self.text_objects("You have crashed!", self.text_font, self.white)
+        self.bomb_thrown_text = self.text_objects("You threw a bomb!", self.text_font, self.white)
 
         #### START SCREEN features rendering ####
 
@@ -432,8 +432,8 @@ class Game():
                     if int(pygame.time.get_ticks() - start_slow_time)//1000 < 5:
                         # logging.debug("Current slow time {}".format(str(start_slow_time)))
                         # logging.debug("Still Getting Bombed, time is {}".format(str(pygame.time.get_ticks())))
-                        TextSurf, TextRect = self.text_objects("You have been bombed by "+config.bomb_sender+"!", self.largeText, self.white)
-                        TextRect.center = ((self.display_width/2),(self.display_height/2-100))
+                        TextSurf, TextRect = self.text_objects("You have been bombed by "+config.bomb_sender+"!", self.text_font, self.white)
+                        TextRect.center = ((self.display_width/2),(self.display_height/2+80))
                         self.screen.blit(TextSurf, TextRect)
                     else:
                         # logging.debug("Bomb clear")
