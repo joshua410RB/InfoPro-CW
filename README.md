@@ -1,9 +1,9 @@
 # InfoPro-CW
 
 ## How to use
-1. Server Set Up
+### Server Set Up
 
-Our server implementation uses docker to deploy the broker and the mqtt_server.py. We implemented it with TLS encryption using a self signed Certificate Authority cert. The same cert is also used in the local computer file. If you would like to use the Encrypted Version, you will either have to create your own certificates or approach one of the team members to start our server. Else, run the unencrypted version.
+Our server implementation uses Docker to deploy. It will start the broker and run mqtt_server.py which is the server handler. We implemented it with TLS encryption using a self signed Certificate Authority cert. The same cert is also used in the local computer. If you would like to use the Encrypted Version, you will either have to create your own certificates or approach one of the team members to start our server. Else, run the unencrypted version.
 
 To deploy the server, in your cloud instance, install Docker and run the following commands in the server folder:
 - With Encryption
@@ -18,13 +18,13 @@ docker run --it --rm -p 0.0.0.0:32552:1883/tcp infopro_server:1.0
 ```
 This will initialise the server database and start the server client. 
 
-2. FPGA Set Up
+### FPGA Set Up
 - The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
 - Blast the ```sof_elf/16_tap.sof``` into the FPGA using the 
 - Use Nios2-download to download ```sof_elf/16_tap.elf``` software.
 - Other working files are stored in ```hardware/quartus_files``` for reference.
 
-3. Client Set Up
+### Client Set Up
 
 - On your own local computer, do 
 
