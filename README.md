@@ -10,18 +10,29 @@
 This will initialise the server database and start the server client
 
 2. Client Set Up
-- On your own local computer, do 
 
+To run the client, there are a few steps: 
+
+- Enable the ```nios2-terminal``` by running the ```nios2_command_shell.sh``` in your Quartus installation
+
+- To start the game, run
 ```
-./launch_client.sh
+python3 local_computer/main.py --serverip _serverip_ -- port 32552 --username _username_ -e -w
 ```
 
-This will start your ```nios2_command_shell``` that is necessary for uart communication
+- ```serverip``` is your server's ip address, but if running in siyu's AWS server, the ```serverip``` will be _infopro.lioneltsy.life_
+- ```port``` is the port of the server that the client is connecting to
+- Use the ```-e``` argument if you want to encrypt the connection
+- Use the ```w``` argument if the script is ran in a WSL environemnt
 
-```main.py``` is then ran to start the game interface, the fpga uart script and the mqtt client.
 
 3. FPGA Set Up
 - The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
+- To blast and program the FPGA, use the commands:
+```
+nios2-configure-sof hardware/sof_elf
+nios2-download -g hardware/sof_elf/16tap.elf
+```
 - Other working files are stored in ```hardware/quartus_files``` 
 
 ## Testing
