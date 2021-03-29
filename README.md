@@ -8,18 +8,20 @@ Our server implementation uses docker to deploy the broker and the mqtt_server.p
 To deploy the server, in your cloud instance, install Docker and run the following commands in the server folder:
 - With Encryption
 ```
-docker build -t infopro_server:1.0 .
+docker build . -t infopro_server:1.0 --file Dockerfile.
 docker run --it --rm -p 0.0.0.0:32552:8883/tcp infopro_server:1.0
 ```
 - Without Encryption
 ```
-docker build -t infopro_server:1.0 .
+docker build . -t infopro_server:1.0 --file Dockerfile_NoEncrypt
 docker run --it --rm -p 0.0.0.0:32552:1883/tcp infopro_server:1.0 
 ```
 This will initialise the server database and start the server client. 
 
 2. FPGA Set Up
 - The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
+- Blast the ```sof_elf/16_tap.sof``` into the FPGA using the 
+- Use Nios2-download to download ```sof_elf/16_tap.elf``` software.
 - Other working files are stored in ```hardware/quartus_files``` for reference.
 
 3. Client Set Up
@@ -49,3 +51,9 @@ _testno_ is used to specify the number of clients that will be simulated.
 In the script, based on the specified number of clients, 
 
 ## The Team
+Si Yu Tan
+Joshua Lim
+Zhao Siting
+Yang Jeongin 
+Siew Tser Ying
+Melody Leom
