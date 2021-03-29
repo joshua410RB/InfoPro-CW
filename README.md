@@ -2,14 +2,28 @@
 
 ## How to use
 1. Server Set Up
-- In the docker container, do
-```
-./run_server.sh
-```
 
-This will initialise the server database and start the server client
+Our server implementation uses docker to deploy the broker and the mqtt_server.py. We implemented it with TLS encryption using a self signed Certificate Authority cert. The same cert is also used in the local computer file. If you would like to use the Encrypted Version, you will either have to create your own certificates or approach one of the team members to start our server. Else, run the unencrypted version.
 
-2. Client Set Up
+To deploy the server, in your cloud instance, install Docker and run the following commands in the server folder:
+- With Encryption
+```
+docker build -t infopro_server:1.0 .
+docker run --it --rm -p 0.0.0.0:32552:8883/tcp infopro_server:1.0
+```
+- Without Encryption
+```
+docker build -t infopro_server:1.0 .
+docker run --it --rm -p 0.0.0.0:32552:1883/tcp infopro_server:1.0 
+```
+This will initialise the server database and start the server client. 
+
+2. FPGA Set Up
+- The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
+- Other working files are stored in ```hardware/quartus_files``` for reference.
+
+3. Client Set Up
+
 - On your own local computer, do 
 
 ```
@@ -20,9 +34,6 @@ This will start your ```nios2_command_shell``` that is necessary for uart commun
 
 ```main.py``` is then ran to start the game interface, the fpga uart script and the mqtt client.
 
-3. FPGA Set Up
-- The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
-- Other working files are stored in ```hardware/quartus_files``` 
 
 ## Testing
 1. FPGA UART Connection Test
@@ -36,3 +47,5 @@ python3 local_computer/test_client_server.py --testno _testno_
 _testno_ is used to specify the number of clients that will be simulated. 
 
 In the script, based on the specified number of clients, 
+
+## The Team
