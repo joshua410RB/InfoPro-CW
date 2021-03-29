@@ -369,7 +369,9 @@ class Game():
         item_group.add(item)
 
         while (self.gameStart):
-            # logging.debug("Length of Y Queue: {}, Length of X Queue: {}".format(str(len(self.y_data)), str(len(self.x_data))))
+            logging.debug("Current Max Length of Y Queue: {}, Current Max Length of X Queue: {}".format(str(config.max_y_queue_size), str(config.max_x_queue_size)))
+            config.max_x_queue_size = max(config.max_x_queue_size, len(self.x_data))
+            config.max_y_queue_size = max(config.max_y_queue_size, len(self.y_data))
             self.screen.blit(self.roadBg,(0,0)) 
             if len(self.y_data) > 0:
                 obstacle_speed = self.y_data.popleft()
@@ -471,7 +473,11 @@ class Game():
                 item_startx = random.randrange(10,self.display_width-10)
 
             pygame.display.update()
-            # logging.debug("Current FPS: "+ str(self.clock.get_fps()))
+            current_fps = self.clock.get_fps()
+            if current_fps > 0:
+                config.max_fps = min(config.max_fps, current_fps)
+            logging.debug("Current Min FPS: "+ str(config.max_fps))
+            logging.debug("Current FPS: "+ str(current_fps))
             self.clock.tick(120)
 
         self.end_flag.set()

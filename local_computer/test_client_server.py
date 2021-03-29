@@ -40,7 +40,7 @@ class mqtt_client_test:
         self.ready_flag = config.ready_flag
         # self.start_flag = config.start_flag
         self.end_flag = config.end_flag
-        self.final_flag = config.final_flag
+        self.final_flag = threading.Event()
         self.send_bomb_flag = config.send_bomb_flag
         self.bombed_flag = config.bombed_flag
         self.ready = config.ready_object
@@ -194,6 +194,7 @@ class mqtt_client_test:
     def on_message_rank(self, client, obj, msg):
         if msg.topic == "info/leaderboard/final":
             self.final_flag.set()
+            logging.debug("Final Flag set")
         elif msg.topic == "info/leaderboard/highscore":
             data = str(msg.payload.decode("utf-8", "ignore"))
             logging.debug("client highscores: "+data)
@@ -214,6 +215,7 @@ class mqtt_client_test:
         if self.final_flag.is_set():
             final_results[self.playername] = self.leaderboard
             logging.debug("Adding to final result")
+            self.final_flag.clear()
 
     # handlers
     def show_leaderboard(self):
@@ -251,21 +253,22 @@ if __name__ == "__main__":
     parser.add_argument('-w', '--wsl', action='store_true',
                         help='Playing on WSL')
 
-
+    dist = 10000
     args = parser.parse_args()
-    answer_key = {i:("player_{}".format(i),(3000 - i*200)) for i in range(int(args.testno))}
-    dist = 3000
+    answer_key = {i:("player_{}".format(i),(dist - i*200)) for i in range(int(args.testno))}
+
+    thread_queue = []
     for i in range(int(args.testno)):
         mqtt = mqtt_client_test(args.serverip, int(args.port), "player_{}".format(i), args.encrypt, dist, int(args.testno))
         mqtt.connect()
-        player = threading.Thread(target=mqtt.start_client, daemon=True)
+        player = threading.Thread(name="player_{}_game".format(i), target=mqtt.start_client, daemon=True)
         logging.debug("Starting")
-        rank = threading.Thread(target=mqtt.show_leaderboard, daemon=True)
         # bomb = threading.Thread(target=mqtt.handle_bomb, daemon=True)
         dist -= 200
-        player.start()
-        rank.start()
-        # bomb.start()
+        thread_queue.append(player)
+
+    for i in thread_queue:
+        i.start()
         
     while len(final_results) < int(args.testno):
         # print(len(final_results))
@@ -278,6 +281,8 @@ if __name__ == "__main__":
             pass_cases += 1
         else:
             print(player+" test failed")
+            print(result)
+            print(answer_key)
 
     if pass_cases == int(args.testno):
         print("Simulation Passed for {} number of simulated clients!".format(args.testno))

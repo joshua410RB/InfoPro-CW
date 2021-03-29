@@ -275,7 +275,6 @@ if __name__ == "__main__":
     bomb_sender.start()
         
     while config.bomb_received == 0 or config.bomb_sent == 0: 
-        print(config.bomb_received, config.bomb_sent)
         pass
 
     print("Bomb Feature Simulation Passed and took {}s !".format(config.bomb_received - config.bomb_sent))

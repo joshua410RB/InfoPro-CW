@@ -48,3 +48,6 @@ bomb_sender = ""
 # Testing
 bomb_sent = 0
 bomb_received = 0
+max_fps  = 10000
+max_x_queue_size = 0
+max_y_queue_size = 0
