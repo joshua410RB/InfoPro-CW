@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 final_results = {}
 
 class mqtt_client_test:
-    def __init__(self, ip, port, username, encrypt, final_dist, test_no):
+    def __init__(self, ip, port, username, encrypt, final_dist, send_bomb):
         self.brokerip = ip
         self.brokerport = port
         self.playername = username
@@ -45,7 +45,7 @@ class mqtt_client_test:
         self.bombed_flag = config.bombed_flag
         self.ready = config.ready_object
         self.final_dist = final_dist
-        self.test_no = test_no
+        self.send_bomb = send_bomb
         
         # game details
         self.started = False
@@ -84,7 +84,6 @@ class mqtt_client_test:
         self.accel_client.loop_start()
         self.game_client.loop_start()
         self.rank_client.loop_start()
-        time.sleep(self.test_no)
         send_count = 0
 
         while send_count < 3:
@@ -93,8 +92,11 @@ class mqtt_client_test:
             logging.debug(self.playername+" is ready")
             send_count += 1
 
-        time.sleep(0.1)
-        dist = 0
+        time.sleep(0.1) 
+        if self.send_bomb:
+            dist = 0
+        else:
+            dist = 200
         while not self.started:
             pass
 
@@ -105,6 +107,10 @@ class mqtt_client_test:
                 self.accel_client.publish("info/dist/"+self.playername, dist, qos=1)
                 time.sleep(0.1)
                 dist += 100
+                if self.send_bomb and dist == 1000:
+                    logging.debug("throw bomb")
+                    self.bomb_client.publish("info/bomb", self.playername+":sendbomb", qos=1)
+                    config.bomb_sent = time.time()
 
         logging.debug(self.playername+" finished")
         time.sleep(1)
@@ -144,6 +150,7 @@ class mqtt_client_test:
                 config.bomb_sender = sender
                 logging.debug(msg.topic + " bombed by " +sender+":(")
                 self.bombed_flag.set()
+                config.bomb_received = time.time()
     
     # game settings
     def on_publish_game(self, client, userdata, mid):
@@ -244,8 +251,6 @@ if __name__ == "__main__":
     parser.add_argument('--port', 
                         default= 1883,
                         help='input your server port')
-    parser.add_argument('--testno', 
-                        help='input number of clients to simulate')
     parser.add_argument('-e', '--encrypt', action='store_true',
                         help='Use encryption using TLS')
     parser.add_argument('-w', '--wsl', action='store_true',
@@ -253,32 +258,25 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    answer_key = {i:("player_{}".format(i),(3000 - i*200)) for i in range(int(args.testno))}
     dist = 3000
-    for i in range(int(args.testno)):
-        mqtt = mqtt_client_test(args.serverip, int(args.port), "player_{}".format(i), args.encrypt, dist, int(args.testno))
-        mqtt.connect()
-        player = threading.Thread(target=mqtt.start_client, daemon=True)
-        logging.debug("Starting")
-        rank = threading.Thread(target=mqtt.show_leaderboard, daemon=True)
-        # bomb = threading.Thread(target=mqtt.handle_bomb, daemon=True)
-        dist -= 200
-        player.start()
-        rank.start()
-        # bomb.start()
-        
-    while len(final_results) < int(args.testno):
-        # print(len(final_results))
-        pass
-    pass_cases = 0
     
-    for player, result in final_results.items():
-        if ( result == answer_key ):
-            print(player+" test passed")
-            pass_cases += 1
-        else:
-            print(player+" test failed")
+    mqtt = mqtt_client_test(args.serverip, int(args.port), "bomb_sender", args.encrypt, dist, True)
+    mqtt.connect()
+    bomb_sender = threading.Thread(target=mqtt.start_client, daemon=True)
+    
+    mqtt2 = mqtt_client_test(args.serverip, int(args.port), "bomb_receiver", args.encrypt, dist, False)
+    mqtt2.connect()
+    bomb_receiver = threading.Thread(target=mqtt2.start_client, daemon=True)
 
-    if pass_cases == int(args.testno):
-        print("Simulation Passed for {} number of simulated clients!".format(args.testno))
+    logging.debug("Starting")
+    
+    
+    bomb_receiver.start()
+    bomb_sender.start()
+        
+    while config.bomb_received == 0 or config.bomb_sent == 0: 
+        print(config.bomb_received, config.bomb_sent)
+        pass
+
+    print("Bomb Feature Simulation Passed and took {}s !".format(config.bomb_received - config.bomb_sent))
     

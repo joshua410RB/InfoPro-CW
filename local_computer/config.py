@@ -44,3 +44,7 @@ bombed_flag = threading.Event()
 
 # Bomb Sender's name
 bomb_sender = ""
+
+# Testing
+bomb_sent = 0
+bomb_received = 0
