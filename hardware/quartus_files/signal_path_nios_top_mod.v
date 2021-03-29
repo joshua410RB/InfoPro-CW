@@ -97,18 +97,16 @@ module signal_path_nios_top_mod(
 //	assign HEX4 = 255;
 //	assign HEX5 = 255;
 
-	hex_to_7seg disp0(HEX0, x_read[3:0]);
-   hex_to_7seg disp1(HEX1, x_read[7:4]);
-	hex_to_7seg disp2(HEX2, x_read[11:8]);
-	hex_to_7seg disp3(HEX3, x_read[15:12]);
+
+// for debugging
+// 	hex_to_7seg disp0(HEX0, x_read[3:0]);
+//  hex_to_7seg disp1(HEX1, x_read[7:4]);
+// 	hex_to_7seg disp2(HEX2, x_read[11:8]);
+// 	hex_to_7seg disp3(HEX3, x_read[15:12]);
 
     always_comb begin
-		LEDR[1:0] = y_bank;
-      LEDR[4:3] = x_bank;
-//      LEDR = led;
-//
-//        ARDUINO_IO[8] = ready;
-//        ARDUINO_IO[9] = data_interrupt;
+	 	LEDR[1:0] = y_bank;
+      	LEDR[4:3] = x_bank;
         result = x_read;
 
 		x_read = x_out + 16'h8000;
@@ -137,13 +135,13 @@ module signal_path_nios_top_mod(
 			.x_coeff_bank_export                    (x_bank),        				//                    x_coeff_bank.export
 			.y_coeff_bank_export                    (y_bank),        				//                    y_coeff_bank.export
 			.z_coeff_bank_export                    (z_bank),        				//                    z_coeff_bank.export
-//			.hex0_export        							 (HEX0[6:0]),        					//        hex0_external_connection.export
-//			.hex1_export        							 (HEX1),        					//        hex1_external_connection.export
-//			.hex2_export        							 (HEX2),          				//        hex2_external_connection.export
-//			.hex3_export        							 (HEX3),        					//        hex3_external_connection.export
-			.hex4_export        							 (HEX4),        					//        hex4_external_connection.export
-			.hex5_export        							 (HEX5),        					//        hex5_external_connection.export
-			.key1_button_export 							 (KEY[1])  		
+			.hex0_export        					(HEX0),        		    //        hex0_external_connection.export
+			.hex1_export        					(HEX1),        					//        hex1_external_connection.export
+			.hex2_export        					(HEX2),          				//        hex2_external_connection.export
+			.hex3_export        					(HEX3),        					//        hex3_external_connection.export
+			.hex4_export        					(HEX4),        					//        hex4_external_connection.export
+			.hex5_export        					(HEX5),        					//        hex5_external_connection.export
+			.key1_button_export 					(KEY[1])  		
 			
 	);
 

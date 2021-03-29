@@ -25,7 +25,9 @@ int ybank;
 int zbank;
 
 int button_datain;
-int bomb_count = 0;
+int bomb_thrown = 0;
+
+int counter1=0;
 
 enum state {
 	normal = 0,
@@ -41,6 +43,7 @@ void readValues()	{					// ISR to store new values into variables
 	z_data = IORD(ACCEL_ZREAD_BASE,0);
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(ACCEL_DATA_INTERRUPT_BASE, 0);	// clear interrupt edge capture register
 	update_flag=1;
+	// button_datain = IORD_ALTERA_AVALON_PIO_DATA(KEY1_BUTTON_BASE);
 }
 
 void IRQInit(void *isr)	{
@@ -151,12 +154,14 @@ void print_letters(char let5, char let4, char let3, char let2, char let1, char l
 }
 //================================================================================
 
+
 int main()
 {
   //========== Initialize interrupt handlers =======================================
   IRQInit(readValues);												// start interrupt handler for accelerometer values
   IOWR_ALTERA_AVALON_PIO_IRQ_MASK(ACCEL_DATA_INTERRUPT_BASE, 0xFF);
   update_flag=0;
+  counter1=0;
   jtag_uart_init(sys_jtag_isr);
   //================================================================================
 
@@ -165,9 +170,11 @@ int main()
 	  sw = IORD(SWITCH_BASE,0);
 
 	  if(update_flag==1)	{	// print accelerometer data
-//		  alt_printf("<->");
-		  alt_printf("<->%x|%x|%x<|> \n", x_data, y_data, z_data);
-//		  alt_printf("<|>");
+		  alt_printf("<->%x|%x|%x|%x<|> \n", x_data, y_data, z_data, bomb_thrown);
+		  if(bomb_thrown>0)	{
+			  bomb_thrown=0;
+		  }
+		//   bomb_thrown=0;
 		  update_flag=0;
 	  }
 
@@ -183,76 +190,53 @@ int main()
 		    	break;
 		    case 'x':
 		    	mode = stop;
-		      	break;
-		    case 'b':
-		    	bomb_count++;
-		    	switch (bomb_count){
-		    	case 1:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '1');}
-		    		break;
-		    	case 2:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '2');}
-		    		break;
-		    	case 3:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '3');}
-		    		break;
-		    	case 4:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '4');}
-		    		break;
-		    	case 5:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '5');}
-		    		break;
-		    	case 6:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '6');}
-		    		break;
-		    	case 7:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '7');}
-		    		break;
-		    	case 8:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '8');}
-		    		break;
-		    	case 9:
-		    		for (int i=0; i<60000; i++) {print_letters('B', 'O', 'N', 'B', '.', '9');}
-		    		break;
-		        }
 		        break;
 		  }
 	  }
 	  //================================================================================================
 
-	  //============ printing to 7-seg display: mode, picking up bombs and throwing bombs ==============
-	  if (bomb_count == 0){
-		  if (mode == stop){
-			  print_letters('S', 'T', 'O', 'P', '!', '!');
-		  } else if (mode == slow){
-			  print_letters('S', 'L', 'O', 'U', 'U', '!');
-		  }	else {
-			  print_letters('N', 'O', 'R', 'M', 'A', 'L' );
-		  }
-	  } else {
-		  if (button_datain == 0){
-			  for (int i=0; i<60000; i++) {print_letters('T', 'H', 'R', 'O', 'V', 'V');}
-			  bomb_count--;
-			  alt_printf ("t \n");
-		  } else if (button_datain == 1 && mode == stop){
-			  print_letters('S', 'T', 'O', 'P', '!', '!');
-		  } else if (button_datain == 1 && mode == slow){
-			  print_letters('S', 'L', 'U', 'U', '!', '!');
-		  } else {
-			  print_letters('N', 'O', 'R', 'M', 'A', 'L' );
-		  }
-	  }
+	  //============ printing to 7-seg display: mode,  and throwing bombs ==============================
+		if(button_datain == 0 && counter1==0)	{
+			print_letters('T', 'H', 'R', 'O', 'V', 'V');
+			counter1=1;
+		}
+		IOWR(LED_BASE, 0, bomb_thrown);
+		if(counter1>0)	{
+			if(counter1 > 60000)	{
+				counter1=0;
+			}
+			else	{
+				if(counter1==5)	{
+					bomb_thrown = 1;
+				}
+				counter1++;
+			}
+		}
+		else	{
+			if (mode == stop){
+				print_letters('S', 'T', 'O', 'P', '!', '!');
+				bomb_thrown = 0;
+		  	}
+		  	else if (mode == slow){
+				print_letters('S', 'L', 'O', 'U', 'U', '!');
+				bomb_thrown = 0;
+		  	}
+			else {
+				print_letters('N', 'O', 'R', 'M', 'A', 'L' );
+				bomb_thrown = 0;
+		  	}
+		}
 	  //================================================================================================
 
 	  //================== setting filter coefficients based on the mode player is in ==================
 	  if (mode == normal){
-		  xbank = 0;
-		  ybank = 0;
-		  zbank = 0;
-	  } else if (mode == slow){
 		  xbank = 1;
 		  ybank = 1;
 		  zbank = 1;
+	  } else if (mode == slow){
+		  xbank = 1;
+		  ybank = 2;
+		  zbank = 2;
 	  } else if (mode == stop){
 		  xbank = 3;
 		  ybank = 3;
