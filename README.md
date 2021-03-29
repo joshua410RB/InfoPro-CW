@@ -33,7 +33,7 @@ nios2-download -g 16_tap.elf
 
 - To start the game, run
 ```
-python3 local_computer/main.py --serverip _serverip_ -- port 32552 --username _username_ -e -w
+python3 local_computer/main.py --serverip _serverip_ --port 32552 --username _username_ -e -w
 ```
 
 - ```serverip``` is your server's ip address, but if running in siyu's AWS server, the ```serverip``` will be _infopro.lioneltsy.life_
