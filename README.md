@@ -20,37 +20,52 @@ This will initialise the server database and start the server client.
 
 ### FPGA Set Up
 - The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
-- Blast the ```sof_elf/16_tap.sof``` into the FPGA using the 
-- Use Nios2-download to download ```sof_elf/16_tap.elf``` software.
+- To blast and program the FPGA, use the commands:
+```
+nios2-configure-sof hardware/sof_elf
+nios2-download -g hardware/sof_elf/16tap.elf
+```
 - Other working files are stored in ```hardware/quartus_files``` for reference.
 
 ### Client Set Up
 
-- On your own local computer, do 
+- Enable the ```nios2-terminal``` by running the ```nios2_command_shell.sh``` in your Quartus installation directory.
+- Run ```pip3 install -r requirements.txt``` in the local_computer directory.
 
+- To start the game, run
 ```
-./launch_client.sh
+python3 local_computer/main.py --serverip _serverip_ -- port 32552 --username _username_ -e -w
 ```
 
-This will start your ```nios2_command_shell``` that is necessary for uart communication
-
-```main.py``` is then ran to start the game interface, the fpga uart script and the mqtt client.
-
+- ```serverip``` is your server's ip address, but if running in siyu's AWS server, the ```serverip``` will be _infopro.lioneltsy.life_
+- ```port``` is the port of the server that the client is connecting to
+- Use the ```-e``` argument if you want enable encryption on the server connection
+- Use the ```-w``` argument if the script is ran in a WSL environemnt
 
 ## Testing
-1. FPGA UART Connection Test
-The ```local_computer/test_uart_handler.py``` script interfaces to the uart_handler function and requests certain actions from the user, subsequently verifying if the data is streamed correctly to the appropriate channels based on that. 
+1. **FPGA UART Connection Test**
+
+- The ```local_computer/test_uart_handler.py``` script interfaces to the uart_handler function and requests certain actions from the user, subsequently verifying if the data is streamed correctly to the appropriate channels based on that. 
 Before running this script, make sure that the FPGA has been set up and blasted with the necessary software.
 
-2. Server Connection/Load Test
-- The ```local_computer/test_client_server.py``` script is used to perform testing. To perform testing, run 
+2. **Load Test**
+
+- The ```local_computer/test_client_server.py``` script is used to perform load testing. To perform testing, run 
 ```
-python3 local_computer/test_client_server.py --testno _testno_
+python3 local_computer/test_client_server.py --testno _testno_ --serverip _serverip_ --port _port_
 ```
 
-_testno_ is used to specify the number of clients that will be simulated. 
+- ```testno``` is used to specify the number of clients that will be simulated
+- ```serverip``` is used to specify the ip address of your server 
+- ```port``` is used to specify the port number that you opened on your server
 
-In the script, based on the specified number of clients, 
+
+3.  **Server Response Time Test**
+- To run the response time test, use
+```
+python3 local_computer/test_server_response.py --serverip _serverip_ --port _port_
+```
+- This script generates 2 clients with a fixed distance target. A client will be the bomb sender, and the other, the receiver. The duration between the bomb being sent and the bomb received by the other client is obtained.
 
 ## The Team
 - Si Yu Tan
