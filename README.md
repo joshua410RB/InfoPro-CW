@@ -39,6 +39,8 @@ This will start your ```nios2_command_shell``` that is necessary for uart commun
 
 ## Testing
 1. FPGA UART Connection Test
+The ```local_computer/test_uart_handler.py``` script interfaces to the uart_handler function and requests certain actions from the user, subsequently verifying if the data is streamed correctly to the appropriate channels based on that. 
+Before running this script, make sure that the FPGA has been set up and blasted with the necessary software.
 
 2. Server Connection/Load Test
 - The ```local_computer/test_client_server.py``` script is used to perform testing. To perform testing, run 
@@ -51,9 +53,9 @@ _testno_ is used to specify the number of clients that will be simulated.
 In the script, based on the specified number of clients, 
 
 ## The Team
-Si Yu Tan
-Joshua Lim
-Zhao Siting
-Yang Jeongin 
-Siew Tser Ying
-Melody Leom
+- Si Yu Tan
+- Joshua Lim
+- Zhao Siting
+- Yang Jeongin 
+- Siew Tser Ying
+- Melody Leom
