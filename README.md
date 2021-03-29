@@ -44,6 +44,11 @@ nios2-download -g hardware/sof_elf/16tap.elf
 python3 local_computer/test_client_server.py --testno _testno_
 ```
 
-_testno_ is used to specify the number of clients that will be simulated. 
+```testno``` is used to specify the number of clients that will be simulated. 
 
-In the script, based on the specified number of clients, 
+- For average response time testing, run
+```
+python3 local_computer/test_server_response.py
+```
+
+This script generates 2 clients with a fixed distance target. A client will be the bomb sender, and the other, the receiver. The duration between the bomb being sent and the bomb received by the other client is obtained.
