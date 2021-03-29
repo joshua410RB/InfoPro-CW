@@ -33,7 +33,8 @@ nios2-download -g 16_tap.elf
 
 - To start the game, run
 ```
-python3 local_computer/main.py --serverip _serverip_ --port 32552 --username _username_ -e -w
+
+python3 main.py --serverip _serverip_ --port 32552 --username _username_ -e -w
 ```
 
 - ```serverip``` is your server's ip address, but if running in siyu's AWS server, the ```serverip``` will be _infopro.lioneltsy.life_
@@ -41,17 +42,24 @@ python3 local_computer/main.py --serverip _serverip_ --port 32552 --username _us
 - Use the ```-e``` argument if you want enable encryption on the server connection
 - Use the ```-w``` argument if the script is ran in a WSL environemnt
 
-## Testing
+Although WSL works, it offers a sub par user experience. We highly discourage users from running the game on WSL.
+## Testing (Only available on Linux)
 1. **FPGA UART Connection Test**
 
 - The ```local_computer/test_uart_handler.py``` script interfaces to the uart_handler function and requests certain actions from the user, subsequently verifying if the data is streamed correctly to the appropriate channels based on that. 
 Before running this script, make sure that the FPGA has been set up and blasted with the necessary software.
+Run:
+```
+cd local_computer
+python3 test_uart_handler.py 
+```
 
 2. **Load Test**
 
 - The ```local_computer/test_client_server.py``` script is used to perform load testing. To perform testing, run 
 ```
-python3 local_computer/test_client_server.py --testno _testno_ --serverip _serverip_ --port _port_
+cd local_computer
+python3 test_client_server.py --testno _testno_ --serverip _serverip_ --port _port_
 ```
 
 - ```testno``` is used to specify the number of clients that will be simulated
@@ -62,7 +70,8 @@ python3 local_computer/test_client_server.py --testno _testno_ --serverip _serve
 3.  **Server Response Time Test**
 - To run the response time test, use
 ```
-python3 local_computer/test_server_response.py --serverip _serverip_ --port _port_
+cd local_computer
+python3 test_server_response.py --serverip _serverip_ --port _port_
 ```
 - This script generates 2 clients with a fixed distance target. A client will be the bomb sender, and the other, the receiver. The duration between the bomb being sent and the bomb received by the other client is obtained.
 

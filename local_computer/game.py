@@ -520,6 +520,7 @@ class Game():
         config.dist_data = 0
         self.gameExit = False
         self.gameStart = False
+        self.bombnumber = 0
         self.end_flag.clear()
         self.ready_flag.clear()
         self.queue_empty()
