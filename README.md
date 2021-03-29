@@ -8,12 +8,12 @@ To deploy the server, in your cloud instance, install Docker and run the followi
 - With Encryption
 ```
 docker build . -t infopro_server:1.0 --file Dockerfile
-docker run --it --rm -p 0.0.0.0:32552:8883/tcp infopro_server:1.0
+docker run -it --rm -p 0.0.0.0:32552:8883/tcp infopro_server:1.0
 ```
 - Without Encryption
 ```
 docker build . -t infopro_server:1.0 --file Dockerfile_NoEncrypt
-docker run --it --rm -p 0.0.0.0:32552:1883/tcp infopro_server:1.0 
+docker run -it --rm -p 0.0.0.0:32552:1883/tcp infopro_server:1.0 
 ```
 This will initialise the server database and start the server client. 
 
