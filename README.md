@@ -2,13 +2,12 @@
 
 ## How to use
 ### Server Set Up
-
-Our server implementation uses Docker to deploy. It will start the broker and run mqtt_server.py which is the server handler. We implemented it with TLS encryption using a self signed Certificate Authority cert. The same cert is also used in the local computer. If you would like to use the Encrypted Version, you will either have to create your own certificates or approach one of the team members to start our server. Else, run the unencrypted version.
-
+Our server implementation uses Docker to deploy. It will start the broker and run mqtt_server.py which is the server handler.
+TLS encryption is implemented using self-signed certs with the server as the Certificate Authority. A copy of the server's CA cert is shared with the local computer. If you would like to use the Encrypted Version, you will either have to create your own certificates or approach one of the team members to start our server. Else, run the unencrypted version.
 To deploy the server, in your cloud instance, install Docker and run the following commands in the server folder:
 - With Encryption
 ```
-docker build . -t infopro_server:1.0 --file Dockerfile.
+docker build . -t infopro_server:1.0 --file Dockerfile
 docker run --it --rm -p 0.0.0.0:32552:8883/tcp infopro_server:1.0
 ```
 - Without Encryption
@@ -20,10 +19,10 @@ This will initialise the server database and start the server client.
 
 ### FPGA Set Up
 - The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
-- To blast and program the FPGA, use the commands:
+- To blast and program the FPGA, use the commands in the ```hardware/sof_elf``` directory:
 ```
-nios2-configure-sof hardware/sof_elf
-nios2-download -g hardware/sof_elf/16tap.elf
+nios2-configure-sof 16_tap.sof
+nios2-download -g 16_tap.elf
 ```
 - Other working files are stored in ```hardware/quartus_files``` for reference.
 
