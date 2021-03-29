@@ -1,7 +1,7 @@
 # InfoPro-CW
 
 ## How to use
-1. Server Set Up
+1. **Server Set Up**
 
 Our server implementation uses docker to deploy the broker and the mqtt_server.py. We implemented it with TLS encryption using a self signed Certificate Authority cert. The same cert is also used in the local computer file. If you would like to use the Encrypted Version, you will either have to create your own certificates or approach one of the team members to start our server. Else, run the unencrypted version.
 
@@ -18,7 +18,7 @@ docker run --it --rm -p 0.0.0.0:32552:1883/tcp infopro_server:1.0
 ```
 This will initialise the server database and start the server client. 
 
-2. FPGA Set Up
+2. **FPGA Set Up**
 - The ```.sof``` and ```.elf``` files in the ```hardware/sof_elf``` folder can be used directly to blast and program the FPGA. 
 - To blast and program the FPGA, use the commands:
 ```
@@ -27,7 +27,7 @@ nios2-download -g hardware/sof_elf/16tap.elf
 ```
 - Other working files are stored in ```hardware/quartus_files``` for reference.
 
-3. Client Set Up
+3. **Client Set Up**
 
 To run the client, there are a few steps: 
 
@@ -44,12 +44,12 @@ python3 local_computer/main.py --serverip _serverip_ -- port 32552 --username _u
 - Use the ```-w``` argument if the script is ran in a WSL environemnt
 
 ## Testing
-1. FPGA UART Connection Test
+1. **FPGA UART Connection Test**
 
 - The ```local_computer/test_uart_handler.py``` script interfaces to the uart_handler function and requests certain actions from the user, subsequently verifying if the data is streamed correctly to the appropriate channels based on that. 
 Before running this script, make sure that the FPGA has been set up and blasted with the necessary software.
 
-2. Server Connection/Load Test
+2. **Load Test**
 
 - The ```local_computer/test_client_server.py``` script is used to perform load testing. To perform testing, run 
 ```
@@ -59,7 +59,7 @@ python3 local_computer/test_client_server.py --testno _testno_
 - ```testno``` is used to specify the number of clients that will be simulated
 
 
-3.  Average response time testing
+3.  **Server Response Time Test**
 - To run the response time test, use
 ```
 python3 local_computer/test_server_response.py
