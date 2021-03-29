@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.image = pygame.image.load('img/race_car.png')
+        self.image = pygame.image.load('assets/race_car.png')
         # self.image = pygame.Surface([width, height])
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
@@ -38,7 +38,7 @@ class Player(pygame.sprite.Sprite):
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.image = pygame.image.load('img/normal_car.png')
+        self.image = pygame.image.load('assets/normal_car.png')
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
     def update(self, pos_x, pos_y):
@@ -47,7 +47,7 @@ class Obstacle(pygame.sprite.Sprite):
 class Item(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.image = pygame.image.load('img/item.png')
+        self.image = pygame.image.load('assets/item.png')
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
     def update(self, pos_x, pos_y):
@@ -68,7 +68,7 @@ class Game():
         # Create Screen Display
         self.screen = pygame.display.set_mode((self.display_width,self.display_height))
         pygame.display.set_caption('Multiplayer Racing Game')
-        self.icon = pygame.image.load('img/checkered-flag.png') #  icon from: Flaticon.com
+        self.icon = pygame.image.load('assets/checkered-flag.png') #  icon from: Flaticon.com
         pygame.display.set_icon(self.icon)
         self.clock = pygame.time.Clock()
         # Set game objects
@@ -93,14 +93,14 @@ class Game():
 
         self.obstacle_starty = -self.display_height
         self.obstacle_startx = random.randrange(0, self.display_width)
-        self.Bg1 = pygame.image.load('img/startscreen.png').convert()
-        self.Bg2 = pygame.image.load('img/multiplayer_screen.png').convert()
-        self.Bg3 = pygame.image.load('img/ready_screen.png').convert()
-        self.Bg4 = pygame.image.load('img/countdown_screen.png').convert()
-        self.roadBg = pygame.image.load('img/road.png').convert()
-        self.calculatingBg = pygame.image.load('img/calculating.png').convert()
-        self.finalBg = pygame.image.load('img/final_result.png').convert()
-        self.leaderboardBg = pygame.image.load('img/leaderboard.png').convert()
+        self.Bg1 = pygame.image.load('assets/startscreen.png').convert()
+        self.Bg2 = pygame.image.load('assets/multiplayer_screen.png').convert()
+        self.Bg3 = pygame.image.load('assets/ready_screen.png').convert()
+        self.Bg4 = pygame.image.load('assets/countdown_screen.png').convert()
+        self.roadBg = pygame.image.load('assets/road.png').convert()
+        self.calculatingBg = pygame.image.load('assets/calculating.png').convert()
+        self.finalBg = pygame.image.load('assets/final_result.png').convert()
+        self.leaderboardBg = pygame.image.load('assets/leaderboard.png').convert()
         self.bombnumber = 0
 
         # Pre rendering text
